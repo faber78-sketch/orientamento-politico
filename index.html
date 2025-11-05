@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Test di Orientamento Politico - Versione Completa</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body { font-family: "Segoe UI", Roboto, Arial; background:#f6f8fb; color:#111; margin:0; padding:18px; }
+  header { background:#0d6efd; color:#fff; padding:14px 18px; border-radius:8px; text-align:center; font-size:1.2rem; }
+  .container { max-width:1100px; margin:18px auto; }
+  section.card { background:#fff; border-radius:10px; padding:14px; box-shadow:0 6px 18px rgba(16,24,40,0.06); margin-bottom:14px; }
+  h2 { color:#0d6efd; margin:0 0 10px 0; }
+  label.q { display:block; margin:10px 0 6px 0; font-weight:600; }
+  select { width:100%; padding:8px; border-radius:6px; border:1px solid #d9e2ec; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .btn { display:inline-block; background:#0d6efd; color:#fff; padding:10px 14px; border-radius:8px; border:none; cursor:pointer; margin-top:8px; }
+  #result { margin-top:12px; padding:12px; background:linear-gradient(180deg,#e9f2ff,#f7fbff); border-radius:8px; }
+  ul { margin:6px 0 0 18px; }
+  canvas { max-width:700px; margin:18px auto; display:block; }
+  .small { font-size:0.9rem; color:#333; }
+  .profile-title { font-size:1.1rem; color:#073763; margin:6px 0; }
+  .parties { font-weight:700; color:#0b5ed7; }
+  .legend-item { margin-bottom:6px; }
+  @media (max-width:800px) { .row { grid-template-columns:1fr; } canvas { width:100% !important; } }
+</style>
+</head>
+<body>
+<header>🗳️ Test di Orientamento Politico Italiano — Versione completa</header>
+
+<div class="container">
+
+  <section class="card" id="intro">
+    <h2>Come funziona</h2>
+    <p class="small">72 domande suddivise in 9 aree. Rispondi con valori da 1 (completamente in disaccordo) a 5 (completamente d'accordo). Le domande che esprimono un orientamento "di sinistra" vengono automaticamente invertite (6 - valore) perché il risultato finale mostri sempre: <strong>1 = molto a sinistra</strong>, <strong>5 = molto a destra</strong>.</p>
+    <p class="small">Alla fine otterrai un punteggio ponderato, un profilo descrittivo e la corrispondenza con partiti e movimenti, italiani e di riferimento straniero.</p>
+  </section>
+
+  <form id="testForm">
+    <!-- Questions will be rendered here -->
+  </form>
+
+  <div style="text-align:center">
+    <button class="btn" onclick="onCalculate(event)">Calcola risultato</button>
+    <button class="btn" style="background:#6c757d" onclick="onReset(event)">Reset</button>
+  </div>
+
+  <section class="card" id="result" style="display:none;">
+    <div id="profileBlock"></div>
+    <canvas id="radarChart"></canvas>
+    <div id="areasList"></div>
+  </section>
+
+</div>
+
+<script>
+// --- 1) Domande per area (72 totali) ---
+// Le 9 array contengono esattamente le 8 affermazioni che mi hai fornito.
+const areas = [
+  { id:"area1", title:"Economia e lavoro", questions:[
+    "Lo Stato deve intervenire attivamente per ridistribuire la ricchezza e ridurre le disuguaglianze.",
+    "Le tasse sui grandi patrimoni e profitti aziendali dovrebbero essere aumentate.",
+    "Le privatizzazioni hanno migliorato l’efficienza economica del Paese.",
+    "Il salario minimo legale è necessario per tutelare i lavoratori.",
+    "Le imprese dovrebbero avere meno vincoli sindacali per essere competitive.",
+    "Le cooperative e le imprese sociali dovrebbero essere favorite rispetto ai grandi gruppi industriali.",
+    "Gli incentivi alle aziende dovrebbero essere legati alla stabilità dell’occupazione.",
+    "Il mercato, e non lo Stato, deve determinare salari e prezzi."
+  ]},
+  { id:"area2", title:"Stato, tasse e welfare", questions:[
+    "Lo Stato deve garantire sanità e istruzione gratuite e di alta qualità per tutti.",
+    "Chi guadagna di più dovrebbe contribuire con tasse proporzionalmente più alte.",
+    "Il welfare crea dipendenza e scoraggia l’iniziativa individuale.",
+    "È giusto ridurre le tasse anche a costo di tagliare la spesa pubblica.",
+    "Il reddito di cittadinanza o misure simili sono strumenti utili.",
+    "I servizi pubblici dovrebbero essere gestiti da aziende private sotto controllo statale.",
+    "La spesa pubblica per la difesa dovrebbe aumentare.",
+    "La burocrazia è un ostacolo maggiore rispetto alla mancanza di fondi."
+  ]},
+  { id:"area3", title:"Europa e politica estera", questions:[
+    "L’Italia deve restare pienamente integrata nell’Unione Europea.",
+    "L’euro ha portato più vantaggi che svantaggi.",
+    "L’Italia dovrebbe poter violare temporaneamente le regole europee di bilancio per investire in crescita.",
+    "La NATO è una garanzia di sicurezza per l’Italia.",
+    "L’Italia dovrebbe adottare una politica estera più autonoma dagli USA.",
+    "L’Unione Europea dovrebbe avere una propria difesa comune.",
+    "Le sanzioni economiche sono uno strumento efficace in politica estera.",
+    "La sovranità nazionale deve prevalere su quella europea."
+  ]},
+  { id:"area4", title:"Ambiente e sviluppo sostenibile", questions:[
+    "Le politiche ambientali devono essere prioritarie anche se rallentano la crescita economica.",
+    "Il nucleare è una soluzione sostenibile per ridurre le emissioni.",
+    "Le tasse ambientali dovrebbero colpire le imprese più inquinanti.",
+    "Lo Stato deve investire di più in energie rinnovabili.",
+    "Gli agricoltori devono essere sostenuti nella transizione ecologica.",
+    "L’ambiente è troppo spesso usato come pretesto per nuove tasse.",
+    "I trasporti pubblici dovrebbero essere potenziati anche a discapito dell’uso dell’auto privata.",
+    "Le grandi opere infrastrutturali vanno semplificate anche se danneggiano l’ambiente."
+  ]},
+  { id:"area5", title:"Immigrazione e identità", questions:[
+    "L’immigrazione è una risorsa economica e culturale.",
+    "L’Italia deve accogliere solo chi ha diritto all’asilo.",
+    "Le frontiere dovrebbero essere chiuse per difendere il lavoro nazionale.",
+    "Gli stranieri devono integrarsi rispettando la nostra cultura e le nostre leggi.",
+    "Lo ius soli (cittadinanza ai nati in Italia) va approvato.",
+    "La presenza di immigrati aumenta l’insicurezza.",
+    "L’Italia deve contribuire a un sistema europeo di redistribuzione dei migranti.",
+    "L’identità italiana è messa a rischio da un’eccessiva globalizzazione culturale."
+  ]},
+  { id:"area6", title:"Diritti civili e società", questions:[
+    "Le coppie omosessuali devono avere gli stessi diritti matrimoniali delle coppie etero.",
+    "L’aborto è un diritto da difendere.",
+    "L’obiezione di coscienza deve essere tutelata in ogni ambito.",
+    "Lo Stato non deve interferire nelle scelte personali di fine vita.",
+    "L’educazione sessuale deve essere obbligatoria nelle scuole.",
+    "Le famiglie tradizionali devono essere privilegiate nelle politiche sociali.",
+    "La parità di genere è ancora lontana e richiede interventi mirati.",
+    "Le politiche LGBT+ ricevono già troppa attenzione rispetto ad altri temi."
+  ]},
+  { id:"area7", title:"Ordine, giustizia e sicurezza", questions:[
+    "Le pene devono essere più severe per reati gravi.",
+    "La certezza della pena è più importante della rieducazione.",
+    "Il controllo dello Stato sui cittadini deve aumentare per garantire la sicurezza.",
+    "La corruzione è più grave dell’evasione fiscale.",
+    "La giustizia dovrebbe essere più rapida, anche a costo di ridurre le garanzie.",
+    "Le forze dell’ordine dovrebbero avere più poteri operativi.",
+    "Il carcere è uno strumento inefficace e va sostituito da misure alternative.",
+    "I magistrati dovrebbero essere più controllati dal potere politico."
+  ]},
+  { id:"area8", title:"Etica, tecnologia e cultura", questions:[
+    "L’intelligenza artificiale deve essere regolata dallo Stato per evitare abusi.",
+    "La religione cattolica ha un ruolo importante nella cultura italiana.",
+    "Le fake news dovrebbero essere perseguite per legge.",
+    "L’arte e la cultura dovrebbero ricevere più fondi pubblici.",
+    "La libertà di espressione deve essere assoluta, anche per opinioni offensive.",
+    "Le piattaforme digitali dovrebbero pagare più tasse in Italia.",
+    "Le tradizioni locali vanno tutelate contro l’omologazione globale.",
+    "La scienza deve prevalere su ogni credo religioso nelle decisioni pubbliche."
+  ]},
+  { id:"area9", title:"Innovazione sociale e futuro", questions:[
+    "Il reddito di base universale è una buona soluzione per il futuro del lavoro.",
+    "L’automazione va tassata per finanziare la disoccupazione tecnologica.",
+    "Le università dovrebbero essere gratuite per i meritevoli.",
+    "Le start-up dovrebbero ricevere più incentivi pubblici.",
+    "Il lavoro da remoto va favorito anche nel pubblico impiego.",
+    "L’intelligenza artificiale va usata per migliorare i servizi pubblici.",
+    "Le aziende devono rendere pubblici gli impatti ambientali e sociali.",
+    "Le politiche per i giovani devono essere prioritarie rispetto a quelle per gli anziani."
+  ]}
+];
+
+// --- 2) Per ogni domanda: true = invertire (6 - valore) per uniformare 1=sinistra,5=destra
+// Queste inversioni rispettano le scelte che abbiamo concordato
+const invertMap = {
+  area1: [true,true,false,true,false,true,true,false],
+  area2: [true,true,false,false,true,false,false,false],
+  area3: [true,true,true,false,false,true,false,false],
+  area4: [true,true,true,true,false,false,false,true],
+  area5: [true,false,false,false,true,false,true,false],
+  area6: [true,true,false,true,true,false,false,true],
+  area7: [false,false,false,true,false,false,true,false],
+  area8: [true,false,true,true,false,true,false,true],
+  area9: [true,true,true,false,true,false,true,true]
+};
+
+// --- 3) Pesi per la media ponderata finale (sono su scala 0..1 e sommano a 1)
+const weights = {
+  area1: 0.25, // Economia e lavoro
+  area2: 0.15, // Stato e welfare
+  area3: 0.10, // Europa e esteri
+  area4: 0.05, // Ambiente
+  area5: 0.15, // Immigrazione e identità
+  area6: 0.10, // Diritti
+  area7: 0.10, // Ordine e sicurezza
+  area8: 0.05, // Etica e tecnologia
+  area9: 0.05  // Innovazione
+};
+
+// --- 4) Rendering form (select 1..5 for ciascuna domanda)
+function renderForm(){
+  const form = document.getElementById('testForm');
+  areas.forEach((a,ai) => {
+    const sec = document.createElement('section');
+    sec.className = 'card';
+    sec.innerHTML = `<h2>${ai+1}. ${a.title}</h2>`;
+    a.questions.forEach((q,qi) => {
+      const id = `${a.id}_q${qi}`;
+      sec.innerHTML += `
+        <label class="q">${qi+1}. ${q}</label>
+        <select id="${id}" data-area="${a.id}">
+          <option value="">-- Seleziona --</option>
+          <option value="1">1 - Completamente in disaccordo</option>
+          <option value="2">2 - In disaccordo</option>
+          <option value="3">3 - Neutrale</option>
+          <option value="4">4 - D'accordo</option>
+          <option value="5">5 - Completamente d'accordo</option>
+        </select>
+      `;
+    });
+    form.appendChild(sec);
+  });
+}
+renderForm();
+
+// --- 5) Calcolo: prende i valori, applica inversioni, calcola medie per area (1..5), normalizza (0..1) ---
+function computeAreas(){
+  const areaValues = {}; // areaId -> { rawAvg:..., norm:0..1, detailed: [per question adjusted values] }
+  areas.forEach((a) => {
+    const inv = invertMap[a.id];
+    let sum = 0, count = 0, details = [];
+    for(let qi=0; qi<8; qi++){
+      const sel = document.getElementById(`${a.id}_q${qi}`);
+      const v = sel ? Number(sel.value) : NaN;
+      if(!v) { details.push(null); continue; } // unanswered
+      const adj = inv[qi] ? (6 - v) : v; // inversion if needed
+      sum += adj; count++;
+      details.push(adj);
+    }
+    const rawAvg = count>0 ? (sum / count) : null;
+    const norm = rawAvg !== null ? ((rawAvg - 1) / 4) : null; // normalized 0..1 (1 = destra)
+    areaValues[a.id] = { rawAvg, norm, details };
+  });
+  return areaValues;
+}
+
+// --- 6) Calcolo punteggio ponderato complessivo (0..1) ---
+function weightedScore(areaValues){
+  let total=0;
+  for(const k in weights){
+    const val = areaValues[k].norm;
+    total += ( (val===null?0:val) * weights[k] );
+  }
+  return total;
+}
+
+// --- 7) Logica di classificazione in etichette e mapping partiti (IT + esteri) ---
+function classify(areaValues, weighted){
+  // assi derivati
+  const ECO = ( (areaValues.area1.norm || 0) * 0.6 + (areaValues.area2.norm || 0) * 0.4 );
+  const SOCIAL = ( (areaValues.area6.norm || 0) + (areaValues.area4.norm || 0) + (areaValues.area8.norm || 0) ) / 3;
+  const IDENTITY = ( (areaValues.area5.norm || 0) + (areaValues.area3.norm || 0) ) / 2;
+  // thresholds
+  let profile = "";
+  let descr = "";
+  let parties_it = "";
+  let parties_foreign = "";
+
+  // More granular rules combining weighted + axes
+  if(weighted <= 0.18){
+    profile = "Comunista / Egualitario";
+    descr = "Sostegno forte alla proprietà collettiva/controllo pubblico su settori strategici, ridistribuzione massiccia e politiche sociali molto espansive.";
+    parties_it = "Potere al Popolo, Rifondazione Comunista";
+    parties_foreign = "Partiti comunisti/ultra-sinistra (es. alcuni movimenti comunisti europei)";
+  } else if(weighted <= 0.30){
+    profile = "Progressista di sinistra";
+    descr = "Priorità alla giustizia sociale, diritti civili avanzati, stato sociale esteso e forte attenzione all’ambiente.";
+    parties_it = "Partito Democratico (area sinistra), Verdi-Sinistra";
+    parties_foreign = "Social Democrats / Green parties (ES: PSOE/Verdes, DE: SPD/Grüne)";
+  } else if(weighted <= 0.45){
+    profile = "Socialdemocratico / Centrosinistra";
+    descr = "Combinazione di economia mista, diritti civili progressisti e sostegno a istituzioni europee; pragmatico e riformista.";
+    parties_it = "Partito Democratico (centro), Movimento 5 Stelle (ala moderata)";
+    parties_foreign = "Social Democrats (UK: Labour, ES: PSOE, DE: SPD)";
+  } else if(weighted <= 0.55){
+    // centre area
+    if(IDENTITY < 0.45){
+      profile = "Centrista liberal / Tecnocratico";
+      descr = "Orientamento liberale-moderato, favorevole al mercato regolamentato, innovazione e integrazione europea.";
+      parties_it = "Azione, Italia Viva, Forza Italia (ala liberale)";
+      parties_foreign = "En Marche (FR), Renew / Liberal parties (DE: FDP)";
+    } else {
+      profile = "Populismo trasversale / M5S-like";
+      descr = "Posizioni miste: scetticismo verso élite, pragmatismo su welfare, visione spesso 'post-ideologica'.";
+      parties_it = "Movimento 5 Stelle (populismo trasversale)";
+      parties_foreign = "Movimenti populisti europei (vari)";
+    }
+  } else if(weighted <= 0.68){
+    if(IDENTITY > 0.55){
+      profile = "Destra sovranista";
+      descr = "Priorità alla sovranità nazionale, controllo dell’immigrazione, politiche di sicurezza forti e nazionalismo economico.";
+      parties_it = "Lega, Fratelli d’Italia (area sovranista)";
+      parties_foreign = "Vox (ES), RN (FR), Lega-like parties";
+    } else if(SOCIAL > 0.6){
+      profile = "Destra conservatrice";
+      descr = "Tradizione, valori nazionali e ordine pubblico prioritari; mercato e posizione conservatrice sui temi etici.";
+      parties_it = "Fratelli d’Italia, Forza Italia (area conservatrice)";
+      parties_foreign = "Conservative parties (UK: Conservative, DE: CDU)";
+    } else {
+      profile = "Centro-destra liberale";
+      descr = "Mix tra liberismo economico e moderazione sociale; favorevole a riforme pro-business.";
+      parties_it = "Forza Italia (liberal), Azione (economia pro-mercato)";
+      parties_foreign = "Conservative/center-right pro-business parties";
+    }
+  } else {
+    // >0.68
+    if(SOCIAL < 0.4){
+      profile = "Libertario / Individualista";
+      descr = "Riduzione radicale del ruolo dello Stato, massima libertà economica e civica; priorità al merito individuale.";
+      parties_it = "Partito Libertario Italiano e correnti libertarie";
+      parties_foreign = "Libertarian movements, classical-liberal parties";
+    } else if(SOCIAL > 0.6){
+      profile = "Autoritario / Tradizionalista";
+      descr = "Stato forte, ordine e valori tradizionali; spesso correlato a discorsi nazionalisti e forti limitazioni regolatorie su diritti civili.";
+      parties_it = "Forze radicali (es. CasaPound, Forza Nuova) — minoritarie";
+      parties_foreign = "Far-right movements (es. alcuni gruppi radicali)";
+    } else {
+      profile = "Destra forte / Sovranista";
+      descr = "Forte accento sulla sovranità nazionale, controllo dell’immigrazione e politiche economiche protezionistiche.";
+      parties_it = "Fratelli d’Italia, Lega";
+      parties_foreign = "Rassemblement National (FR), Vox (ES)";
+    }
+  }
+
+  return {
+    profile, descr, parties_it, parties_foreign,
+    axes: { ECO, SOCIAL, IDENTITY }
+  };
+}
+
+// --- 8) Utility: orientamento testuale per ogni area (da 0..1)
+function orientationText(norm, areaId){
+  if(norm === null) return { text:"Non risposto", dir:null };
+  // convention after normalization: 0 = sinistra, 1 = destra
+  const pct = Math.round(norm*100);
+  let dir="";
+  if(norm <= 0.33) dir = "Sinistra";
+  else if(norm <= 0.66) dir = "Centro";
+  else dir = "Destra";
+  return { text: `${dir} (score ${pct}%)`, dir, pct };
+}
+
+// --- 9) Event handlers: calcolo e rendering risultato e grafico ---
+let chartInstance = null;
+function onCalculate(e){
+  if(e) e.preventDefault();
+  // collect and check all responses
+  const areaVals = computeAreas();
+  // check completeness
+  let unanswered = false;
+  for(const k in areaVals){
+    if(areaVals[k].norm === null) { unanswered = true; }
+  }
+  if(unanswered){
+    if(!confirm("Ci sono risposte mancanti. Vuoi procedere comunque con i valori compilati? Premi OK per procedere, Annulla per completare le risposte.")){
+      return;
+    }
+  }
+  const weighted = weightedScore(areaVals); // 0..1
+  const classification = classify(areaVals, weighted);
+  // build result block
+  document.getElementById('result').style.display = 'block';
+  const pb = document.getElementById('profileBlock');
+  pb.innerHTML = `
+    <div class="profile-title">Profilo stimato: <strong>${classification.profile}</strong></div>
+    <div class="small">${classification.descr}</div>
+    <p class="small"><strong>Corrispondenza (Italia):</strong> <span class="parties">${classification.parties_it}</span></p>
+    <p class="small"><strong>Corrispondenza (riferimento estero):</strong> ${classification.parties_foreign}</p>
+    <p class="small"><strong>Punteggio ponderato complessivo (1=sinistra,5=destra):</strong> ${(weighted*4+1).toFixed(2)}</p>
+  `;
+  // radar data: labels show orientamenti testuali (non percentuali)
+  const radarLabels = [
+    "Economia — Sinistra→Destra",
+    "Stato/Welfare — Sinistra→Destra",
+    "Diritti — Progressismo→Conservatorismo",
+    "Ambiente — Ambientalismo→Produttivismo",
+    "Immigrazione — Aperto→Restrittivo",
+    "Europa — Europeista→Sovranista",
+    "Sicurezza — Liberal→Autoritario",
+    "Etica/Tecnologia — Laico→Tradizionalista",
+    "Innovazione — Social→Mercato"
+  ];
+  const radarData = areas.map(a => {
+    const v = areaVals[a.id].norm;
+    return v===null ? 0 : Math.round(v*100); // show 0..100 inside chart (but labels describe orientation)
+  });
+
+  // destroy previous chart
+  if(chartInstance) chartInstance.destroy();
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type:'radar',
+    data:{
+      labels: radarLabels,
+      datasets:[{
+        label:'Orientamento per area (0−100)',
+        data: radarData,
+        backgroundColor:'rgba(13,110,253,0.25)',
+        borderColor:'#0d6efd',
+        pointBackgroundColor:'#0d6efd'
+      }]
+    },
+    options:{
+      scales:{
+        r:{
+          min:0, max:100, ticks:{ stepSize:20, display:false },
+          pointLabels:{ font:{size:12} }
+        }
+      },
+      plugins:{
+        tooltip:{
+          callbacks:{
+            label: function(ctx){
+              const i = ctx.dataIndex;
+              const area = areas[i];
+              const av = areaVals[area.id];
+              const orient = orientationText(av.norm, area.id).text;
+              return `${area.title}: ${orient}`;
+            }
+          }
+        },
+        legend:{ display:false }
+      }
+    }
+  });
+
+  // list areas with textual orientation (no raw percentages)
+  const areasList = document.getElementById('areasList');
+  let html = '<h3>Orientamenti per area</h3><div class="row">';
+  areas.forEach((a,i) => {
+    const av = areaVals[a.id];
+    const o = orientationText(av.norm, a.id);
+    html += `<div style="min-width:220px"><strong>${a.title}</strong><div class="small legend-item">${o.text}</div></div>`;
+  });
+  html += '</div>';
+  html += `<hr><div class="small"><strong>Assi derivati:</strong> Economico=${(classification.axes.ECO*100).toFixed(0)}%, Sociale=${(classification.axes.SOCIAL*100).toFixed(0)}%, Identità=${(classification.axes.IDENTITY*100).toFixed(0)}%</div>`;
+  areasList.innerHTML = html;
+
+  // scroll result into view
+  document.getElementById('result').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function onReset(e){
+  if(e) e.preventDefault();
+  if(!confirm("Vuoi resettare tutte le risposte?")) return;
+  // clear all selects
+  areas.forEach(a => {
+    for(let qi=0; qi<8; qi++){
+      const el = document.getElementById(`${a.id}_q${qi}`);
+      if(el) el.value = "";
+    }
+  });
+  document.getElementById('result').style.display = 'none';
+  if(chartInstance) { chartInstance.destroy(); chartInstance = null; }
+}
+
+// --- auto-check: prefill neutral (optional)
+// You can comment out this block if you want the test blank by default:
+(function prefillNeutral(){
+  areas.forEach(a => {
+    for(let qi=0; qi<8; qi++){
+      const el = document.getElementById(`${a.id}_q${qi}`);
+      if(el) el.value = "3";
+    }
+  });
+})();
+</script>
+</body>
+</html>
