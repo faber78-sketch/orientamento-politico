@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test di Orientamento Politico Italiano</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      color: #222;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #0d6efd;
+      color: white;
+      text-align: center;
+      padding: 1.2rem;
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+    section {
+      background: white;
+      margin: 1rem auto;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      max-width: 800px;
+    }
+    h2 {
+      color: #0d6efd;
+    }
+    label {
+      display: block;
+      margin-top: 0.6rem;
+      font-weight: 500;
+    }
+    select {
+      margin-top: 0.3rem;
+      width: 100%;
+      padding: 0.4rem;
+    }
+    button {
+      display: block;
+      background: #0d6efd;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.2rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      margin: 1.5rem auto;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0b5ed7;
+    }
+    #result {
+      background: #e7f1ff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+    canvas {
+      margin-top: 1.5rem;
+      width: 100% !important;
+      height: 400px !important;
+    }
+  </style>
+</head>
+<body>
+
+<header>🗳️ Test di Orientamento Politico Italiano</header>
+
+<div id="form-container"></div>
+
+<section>
+  <button onclick="calculateResults()">Calcola il risultato</button>
+  <div id="result"></div>
+  <canvas id="chart"></canvas>
+</section>
+
+<script>
+const areas = [
+  "Economia e Lavoro",
+  "Stato, Tasse e Welfare",
+  "Diritti civili e società",
+  "Ambiente e sviluppo",
+  "Immigrazione e identità",
+  "Europa e politica estera",
+  "Ordine, giustizia e sicurezza",
+  "Etica, tecnologia e cultura",
+  "Innovazione sociale e futuro"
+];
+
+const questions = [
+  [
+    "Lo Stato dovrebbe intervenire per redistribuire la ricchezza.",
+    "Le tasse alle imprese dovrebbero essere ridotte per creare occupazione.",
+    "Il salario minimo va introdotto per legge.",
+    "Il mercato si autoregola meglio senza troppa burocrazia.",
+    "Gli scioperi danneggiano l’economia.",
+    "Le grandi aziende dovrebbero essere tassate di più.",
+    "Le privatizzazioni migliorano l’efficienza dei servizi.",
+    "Il profitto va redistribuito equamente tra i lavoratori."
+  ],
+  [
+    "Lo Stato deve garantire sanità e scuola gratuite a tutti.",
+    "Chi guadagna di più deve contribuire proporzionalmente di più.",
+    "I sussidi creano dipendenza e vanno ridotti.",
+    "Le pensioni dovrebbero essere più alte anche se aumenta il debito pubblico.",
+    "Lo Stato deve intervenire in caso di disoccupazione.",
+    "Il debito pubblico è un problema secondario rispetto al benessere sociale.",
+    "Il welfare va riservato solo ai cittadini italiani.",
+    "Meglio meno tasse e meno servizi pubblici."
+  ],
+  [
+    "Le coppie omosessuali devono avere gli stessi diritti delle coppie eterosessuali.",
+    "L’aborto è una scelta che deve restare libera.",
+    "La famiglia tradizionale è il pilastro della società.",
+    "Le quote rosa sono necessarie per garantire parità.",
+    "L’educazione sessuale va introdotta obbligatoriamente a scuola.",
+    "I diritti civili sono più importanti delle tradizioni religiose.",
+    "Le adozioni per coppie gay devono essere consentite.",
+    "Il femminismo ha già raggiunto i suoi obiettivi."
+  ],
+  [
+    "La transizione ecologica deve essere prioritaria rispetto alla crescita economica.",
+    "Le energie rinnovabili vanno finanziate anche con nuove tasse.",
+    "Il nucleare è una soluzione utile per ridurre le emissioni.",
+    "L’auto elettrica va favorita con incentivi pubblici.",
+    "La tutela dell’ambiente è compito dello Stato, non delle aziende.",
+    "Le proteste ecologiste sono eccessive.",
+    "L’Italia deve ridurre l’uso di combustibili fossili.",
+    "Le tasse ambientali sono necessarie per cambiare i comportamenti."
+  ],
+  [
+    "L’immigrazione è una risorsa economica e culturale.",
+    "L’Italia deve accogliere solo chi ha diritto all’asilo.",
+    "Le frontiere dovrebbero essere chiuse per difendere il lavoro nazionale.",
+    "Gli stranieri devono integrarsi rispettando la nostra cultura e le nostre leggi.",
+    "Lo ius soli va approvato.",
+    "La presenza di immigrati aumenta l’insicurezza.",
+    "L’Italia deve contribuire alla redistribuzione europea dei migranti.",
+    "L’identità italiana è a rischio per la globalizzazione culturale."
+  ],
+  [
+    "L’Italia deve restare nell’Unione Europea.",
+    "L’euro è un vantaggio per l’Italia.",
+    "Le sanzioni contro regimi autoritari sono giuste.",
+    "L’Italia deve difendere i propri interessi anche contro Bruxelles.",
+    "La NATO è una garanzia di sicurezza.",
+    "Gli aiuti all’estero sono uno spreco di denaro.",
+    "L’Italia deve aumentare la spesa militare.",
+    "Serve un esercito europeo comune."
+  ],
+  [
+    "Le pene devono essere più severe per reati gravi.",
+    "La certezza della pena è più importante della rieducazione.",
+    "Il controllo dello Stato sui cittadini deve aumentare per la sicurezza.",
+    "La corruzione è più grave dell’evasione fiscale.",
+    "La giustizia deve essere più rapida, anche con meno garanzie.",
+    "Le forze dell’ordine devono avere più poteri operativi.",
+    "Il carcere è inefficace e va sostituito da misure alternative.",
+    "I magistrati devono essere controllati dal potere politico."
+  ],
+  [
+    "L’intelligenza artificiale deve essere regolata dallo Stato.",
+    "La religione cattolica ha un ruolo importante nella cultura italiana.",
+    "Le fake news vanno perseguite per legge.",
+    "Arte e cultura devono ricevere più fondi pubblici.",
+    "La libertà di espressione deve essere assoluta, anche se offensiva.",
+    "Le piattaforme digitali devono pagare più tasse in Italia.",
+    "Le tradizioni locali vanno tutelate.",
+    "La scienza deve prevalere su ogni credo religioso."
+  ],
+  [
+    "Il reddito di base universale è una buona soluzione per il futuro.",
+    "L’automazione va tassata per finanziare la disoccupazione tecnologica.",
+    "Le università dovrebbero essere gratuite per i meritevoli.",
+    "Le start-up devono ricevere più incentivi pubblici.",
+    "Il lavoro da remoto va favorito anche nel pubblico impiego.",
+    "L’IA va usata per migliorare i servizi pubblici.",
+    "Le aziende devono rendere pubblici gli impatti ambientali e sociali.",
+    "Le politiche per i giovani devono essere prioritarie."
+  ]
+];
+
+function renderForm() {
+  const container = document.getElementById("form-container");
+  areas.forEach((area, i) => {
+    let section = document.createElement("section");
+    section.innerHTML = `<h2>${i+1}. ${area}</h2>`;
+    questions[i].forEach((q, j) => {
+      section.innerHTML += `
+        <label>${q}</label>
+        <select id="q${i}_${j}">
+          <option value="">-- Seleziona --</option>
+          <option value="1">1 - Completamente in disaccordo</option>
+          <option value="2">2 - In disaccordo</option>
+          <option value="3">3 - Neutrale</option>
+          <option value="4">4 - D'accordo</option>
+          <option value="5">5 - Completamente d'accordo</option>
+        </select>
+      `;
+    });
+    container.appendChild(section);
+  });
+}
+
+function calculateResults() {
+  const scores = areas.map((_, i) => {
+    let vals = questions[i].map((_, j) => parseFloat(document.getElementById(`q${i}_${j}`).value || 0));
+    let avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    return isNaN(avg) ? 0 : avg;
+  });
+
+  const normalized = scores.map(s => (s - 1) / 4);
+
+  const profile = getProfile(normalized);
+  showResult(profile, normalized);
+}
+
+function getProfile(norm) {
+  const left = (norm[0] + norm[1] + norm[2]) / 3;
+  const right = 1 - left;
+  const progressive = (norm[3] + norm[8]) / 2;
+  const conservative = 1 - progressive;
+  const globalist = (norm[5] + norm[4]) / 2;
+  const nationalist = 1 - globalist;
+
+  if (left > 0.6 && progressive > 0.6) return "Progressista di sinistra";
+  if (left > 0.6 && conservative > 0.6) return "Sociale-tradizionale";
+  if (right > 0.6 && conservative > 0.6) return "Conservatore nazionalista";
+  if (right > 0.6 && progressive > 0.6) return "Liberale moderato";
+  return "Centrista o indipendente";
+}
+
+function showResult(profile, normalized) {
+  document.getElementById("result").innerHTML = `
+    <h3>Il tuo profilo politico: ${profile}</h3>
+    <p>Punteggi normalizzati per area (0–1):</p>
+    <ul>${areas.map((a, i) => `<li>${a}: ${(normalized[i]*100).toFixed(1)}%</li>`).join("")}</ul>
+  `;
+
+  const ctx = document.getElementById("chart");
+  new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels: areas,
+      datasets: [{
+        label: "Orientamento",
+        data: normalized.map(v => v * 100),
+        fill: true,
+        borderColor: "#0d6efd",
+        backgroundColor: "rgba(13,110,253,0.3)"
+      }]
+    },
+    options: {
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          ticks: { stepSize: 20 }
+        }
+      }
+    }
+  });
+}
+
+renderForm();
+</script>
+</body>
+</html>
