@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Test Orientamento Politico - Finale (Condividi & PDF)</title>
+
+<!-- html2pdf (combina html2canvas + jsPDF): client-side PDF generation --> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-YcsIPm...=="></script>
+
+<style>
+  body{font-family:Inter,Segoe UI,Arial; margin:0; padding:18px; background:#f6f8fb; color:#111}
+  header{background:#0d6efd;color:#fff;padding:14px;border-radius:8px;text-align:center}
+  .container{max-width:1100px;margin:18px auto}
+  .card{background:#fff;border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(16,24,40,0.06);margin-bottom:14px}
+  h2{color:#0d6efd;margin:0 0 10px}
+  label.q{display:block;margin:8px 0 6px;font-weight:600}
+  select{width:100%;padding:8px;border-radius:6px;border:1px solid #d9e2ec;background:#fff}
+  .controls{text-align:center;margin:12px 0}
+  .btn{background:#0d6efd;color:#fff;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;margin:6px}
+  .btn[disabled]{background:#93c0ff;cursor:not-allowed}
+  .profiles{display:flex;gap:12px;flex-wrap:wrap}
+  .profileCard{flex:1 1 48%;background:#fff;padding:10px;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.04)}
+  .small{font-size:0.95rem;color:#333}
+  .muted{color:#666;font-size:0.9rem}
+  @media(max-width:900px){.profiles{flex-direction:column}}
+</style>
+</head>
+<body>
+<header>🗳️ Test di Orientamento Politico — Versione Definitiva</header>
+<div class="container">
+  <section class="card" id="intro">
+    <h2>Introduzione</h2>
+    <p class="small">Rispondi alle 72 affermazioni (9 aree × 8 domande). Seleziona una risposta per ogni domanda. Il pulsante "Calcola il profilo" sarà attivato solo dopo aver risposto a tutte le domande.</p>
+  </section>
+
+  <form id="testForm"></form>
+
+  <div class="controls">
+    <button id="calcBtn" class="btn" disabled>Calcola il profilo</button>
+    <button id="resetBtn" class="btn" style="background:#6c757d">Reset</button>
+  </div>
+
+  <section id="resultCard" class="card" style="display:none;">
+    <div id="profilesBlock"></div>
+    <div style="margin-top:10px">
+      <button id="copyLinkBtn" class="btn">Copia link con risultato</button>
+      <button id="downloadPdfBtn" class="btn" style="background:#198754">Scarica PDF risultato</button>
+    </div>
+    <div id="areasSummary" class="small" style="margin-top:12px"></div>
+  </section>
+</div>
+
+<script>
+/* --------------------------
+   1) Domande già riviste e chiare (72)
+   -------------------------- */
+const areas = [
+  {id:"area1", title:"Economia e lavoro", questions:[
+    "Lo Stato deve intervenire con misure fiscali per ridurre le grandi disuguaglianze di reddito (es. tassa sui patrimoni).",
+    "Ridurre la pressione fiscale sulle imprese favorisce la creazione di posti di lavoro.",
+    "La privatizzazione di aziende pubbliche strategiche migliora i servizi per i cittadini.",
+    "Un salario minimo legale aiuta a proteggere i lavoratori e ridurre il lavoro povero.",
+    "Gli accordi sindacali dovrebbero essere più flessibili per favorire la competitività delle imprese.",
+    "Le cooperative e le imprese sociali meritano incentivi maggiori rispetto ai grandi gruppi corporativi.",
+    "Gli incentivi pubblici alle imprese dovrebbero essere vincolati a garanzie sulla stabilità dell’occupazione.",
+    "La determinazione dei salari e dei prezzi è meglio lasciata al mercato piuttosto che allo Stato."
+  ]},
+  {id:"area2", title:"Stato, tasse e welfare", questions:[
+    "Sanità e istruzione pubblica devono essere garantite gratuitamente a tutti i residenti.",
+    "Chi ha redditi molto elevati dovrebbe pagare aliquote più alte per finanziare servizi pubblici.",
+    "I sussidi indiscriminati creano dipendenza e vanno limitati.",
+    "È accettabile ridurre la spesa pubblica per abbassare le tasse complessive.",
+    "Misure come il Reddito di Cittadinanza hanno un ruolo utile per il contrasto alla povertà.",
+    "I servizi pubblici possono essere gestiti da privati purché sotto stretto controllo statale.",
+    "La spesa per la difesa deve aumentare per garantire la sicurezza nazionale.",
+    "La burocrazia è il problema principale che ostacola l’efficacia della spesa pubblica."
+  ]},
+  {id:"area3", title:"Europa e politica estera", questions:[
+    "L’Italia deve restare sostanzialmente integrata nell’Unione Europea per poter crescere.",
+    "L’adozione dell’euro ha giovato all’economia italiana nel medio-lungo periodo.",
+    "In tempi di crisi l’Italia dovrebbe avere margini per derogare temporaneamente a regole europee di bilancio.",
+    "La NATO resta un pilastro importante per la sicurezza nazionale italiana.",
+    "L’Italia dovrebbe perseguire più autonomia diplomatica rispetto agli interessi degli USA quando necessario.",
+    "L’UE dovrebbe sviluppare una capacità di difesa comune europea.",
+    "Le sanzioni economiche sono uno strumento efficace per promuovere cambiamenti in regimi autoritari.",
+    "La sovranità nazionale è prioritaria rispetto a decisioni vincolanti prese a livello europeo."
+  ]},
+  {id:"area4", title:"Ambiente e sviluppo sostenibile", questions:[
+    "Le politiche per il clima devono avere priorità anche se comportano costi immediati per l’economia.",
+    "Il nucleare (impianti sicuri) rappresenta una soluzione utile per ridurre le emissioni di CO2.",
+    "Una carbon tax o tasse ambientali sono strumenti appropriati per penalizzare l’inquinamento aziendale.",
+    "Lo Stato deve investire fortemente nelle energie rinnovabili e nella rete elettrica.",
+    "Gli agricoltori devono essere sostenuti nella transizione verso pratiche più sostenibili.",
+    "Le politiche ambientali spesso servono come pretesto per introdurre nuove tasse non efficaci.",
+    "Potenziare i trasporti pubblici vale anche se si limita l’uso dell’auto privata nelle città.",
+    "Le grandi opere infrastrutturali (es. TAV, Ponte sullo Stretto, nuove autostrade) dovrebbero essere accelerate anche a costo di un impatto ambientale maggiore."
+  ]},
+  {id:"area5", title:"Immigrazione e identità", questions:[
+    "L’immigrazione regolare è una risorsa per l’economia e la cultura del Paese.",
+    "L’Italia deve applicare rigorosamente le norme sul diritto d’asilo e accogliere solo chi ne ha diritto.",
+    "In casi di crisi occupazionale le frontiere devono essere più controllate per proteggere i lavoratori locali.",
+    "I migranti dovrebbero integrare rispettando la lingua, le leggi e le pratiche civiche del Paese ospitante.",
+    "Lo ius soli per i nati in Italia dovrebbe essere adottato previa regole chiare di integrazione.",
+    "Un aumento significativo della presenza di immigrati può creare problemi di sicurezza e coesione sociale.",
+    "L’Italia dovrebbe cooperare a livello europeo per gestire e ridistribuire i flussi migratori.",
+    "Un’eccessiva globalizzazione culturale può mettere a rischio elementi centrali dell’identità italiana."
+  ]},
+  {id:"area6", title:"Diritti civili e società", questions:[
+    "Le coppie omosessuali devono avere gli stessi diritti patrimoniali e familiari delle coppie etero.",
+    "La legge sull’aborto deve garantire la tutela della scelta e della salute delle donne.",
+    "L’obiezione di coscienza va tutelata ma non deve impedire l’accesso ai servizi essenziali.",
+    "Lo Stato non dovrebbe ostacolare le decisioni di fine vita prese dal singolo (es. testamento biologico).",
+    "L’educazione sessuale e all’affettività dovrebbe essere parte del curriculum scolastico.",
+    "Le politiche familiari possono prevedere forme di sostegno specifiche per famiglie tradizionali.",
+    "È necessario intervenire per ridurre le discriminazioni e favorire la parità di genere.",
+    "Le iniziative LGBT+ ricevono già sufficienta attenzione nelle istituzioni."
+  ]},
+  {id:"area7", title:"Ordine, giustizia e sicurezza", questions:[
+    "Per reati gravi (es. terrorismo, omicidio) le pene devono essere più severe.",
+    "La certezza della pena è prioritaria rispetto a programmi di rieducazione che richiedono lunghi tempi.",
+    "Per garantire sicurezza, lo Stato dovrebbe poter aumentare strumenti di controllo (anche tecnologici).",
+    "La lotta alla corruzione è più urgente della lotta all’evasione fiscale.",
+    "La giustizia deve essere più rapida anche se richiede procedure più snelle.",
+    "Le forze dell’ordine dovrebbero avere poteri operativi più ampi per prevenire reati violenti.",
+    "Il carcere, per alcuni reati, è meno efficace; vanno pensate alternative (es. misure di educazione e reinserimento).",
+    "I magistrati devono essere scelti e controllati con meccanismi che garantiscano trasparenza e responsabilità."
+  ]},
+  {id:"area8", title:"Etica, tecnologia e cultura", questions:[
+    "L’intelligenza artificiale deve essere regolata dallo Stato per evitare abusi e discriminazioni.",
+    "La religione cattolica ha ancora un ruolo significativo nella cultura pubblica italiana.",
+    "La diffusione di fake news dovrebbe essere contrastata via strumenti giuridici mirati.",
+    "Arte e cultura meritano investimenti pubblici per la loro funzione sociale ed educativa.",
+    "La libertà di espressione deve essere tutelata anche quando le opinioni sono sgradite o offensive.",
+    "Le grandi piattaforme digitali devono contribuire fiscalmente nel Paese dove operano maggiormente.",
+    "Le tradizioni locali vanno tutelate per preservare diversità culturale e identità regionali.",
+    "Nelle decisioni pubbliche la scienza dovrebbe avere un peso guida quando è oggetto di evidenze condivise."
+  ]},
+  {id:"area9", title:"Innovazione sociale e futuro", questions:[
+    "Un reddito di base universale può essere uno strumento valido per affrontare la trasformazione del lavoro.",
+    "L’automazione dovrebbe essere tassata per finanziare programmi di riqualificazione professionale.",
+    "L’istruzione universitaria dovrebbe prevedere più opportunità gratuite per studenti meritevoli.",
+    "Le start-up innovative dovrebbero ricevere incentivi pubblici mirati per favorire la crescita tecnologica.",
+    "Il lavoro da remoto deve essere incoraggiato anche nelle pubbliche amministrazioni dove possibile.",
+    "L’intelligenza artificiale dovrebbe essere usata per migliorare i servizi pubblici (salute, amministrazione).",
+    "Le aziende dovrebbero pubblicare i propri impatti ambientali e sociali (reporting obbligatorio).",
+    "Le politiche pubbliche devono dare priorità a misure per i giovani (occupazione, abitazione, formazione)."
+  ]}
+];
+
+/* --------------------------
+   2) Map inversioni (true = invertire con 6 - value)
+   (seguono le decisioni concordate)
+   -------------------------- */
+const invertMap = {
+  area1: [true,true,false,true,false,true,true,false],
+  area2: [true,true,false,false,true,false,false,false],
+  area3: [true,true,true,false,false,true,false,false],
+  area4: [true,false,true,true,false,false,false,true],
+  area5: [true,false,false,false,true,false,true,false],
+  area6: [true,true,false,false,true,false,false,false], // note: some phrasing changed
+  area7: [false,false,false,true,false,false,true,false],
+  area8: [true,false,true,true,false,true,false,true],
+  area9: [true,true,true,false,true,false,true,true]
+};
+
+/* --------------------------
+   3) Pesi area (come concordato)
+   -------------------------- */
+const weights = {
+  area1:0.25, area2:0.15, area3:0.10, area4:0.05, area5:0.15,
+  area6:0.10, area7:0.10, area8:0.05, area9:0.05
+};
+
+/* --------------------------
+   4) Render form with "Seleziona" default
+   -------------------------- */
+const form = document.getElementById('testForm');
+areas.forEach((a,ai)=>{
+  const sec=document.createElement('section'); sec.className='card';
+  sec.innerHTML=`<h2>${ai+1}. ${a.title}</h2>`;
+  a.questions.forEach((q,qi)=>{
+    const id=`${a.id}_q${qi}`;
+    sec.innerHTML += `<label class="q">${qi+1}. ${q}</label>
+      <select id="${id}" data-area="${a.id}">
+        <option value="">Seleziona</option>
+        <option value="1">1 - Completamente in disaccordo</option>
+        <option value="2">2 - In disaccordo</option>
+        <option value="3">3 - Neutrale</option>
+        <option value="4">4 - D'accordo</option>
+        <option value="5">5 - Completamente d'accordo</option>
+      </select>`;
+  });
+  form.appendChild(sec);
+});
+
+/* --------------------------
+   5) Button handlers & validation
+   -------------------------- */
+const calcBtn = document.getElementById('calcBtn');
+const resetBtn = document.getElementById('resetBtn');
+const copyLinkBtn = document.getElementById('copyLinkBtn');
+const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+function checkComplete(){
+  const total = document.querySelectorAll('select').length;
+  let answered=0; document.querySelectorAll('select').forEach(s=>{ if(s.value!=="") answered++; });
+  calcBtn.disabled = answered !== total;
+}
+document.addEventListener('change', e=>{ if(e.target && e.target.tagName==='SELECT') checkComplete(); });
+resetBtn.addEventListener('click', e=>{ e.preventDefault(); if(!confirm("Resettare tutte le risposte?")) return; document.querySelectorAll('select').forEach(s=>s.value=""); document.getElementById('resultCard').style.display='none'; checkComplete(); });
+
+/* --------------------------
+   6) computeAreas + normalization (1..5 -> rawAvg), norm 0..1
+   -------------------------- */
+function computeAreas(){
+  const result={};
+  areas.forEach(a=>{
+    const inv = invertMap[a.id];
+    let sum=0,count=0, details=[];
+    for(let i=0;i<8;i++){
+      const el = document.getElementById(`${a.id}_q${i}`);
+      const v = el ? Number(el.value) : NaN;
+      if(!v){ details.push(null); continue; }
+      const adj = inv[i] ? (6 - v) : v;
+      sum += adj; count++; details.push(adj);
+    }
+    const rawAvg = count? (sum/count):null;
+    const norm = rawAvg !== null? ((rawAvg -1)/4):null;
+    result[a.id] = {rawAvg, norm, details};
+  });
+  return result;
+}
+
+/* --------------------------
+   7) Derived axes and profile matching (same logic as before, using profileBank)
+   -------------------------- */
+/* profileBank same structure as previous (10 profiles). For brevity construct minimal objects inline */
+const profileBank = [
+  {id:"comunista", label:"Comunista / Egualitario", centroid:{ECO:0.05,SOCIAL:0.35,ID:0.4}, description:"...", parties_it_current:"Potere al Popolo, Rifondazione", parties_it_historical:"PCI (Enrico Berlinguer)", parties_foreign:"Partiti comunisti europei"},
+  {id:"progressista_sx", label:"Progressista di sinistra", centroid:{ECO:0.22,SOCIAL:0.18,ID:0.25}, description:"...", parties_it_current:"PD (Elly Schlein), Verdi-Sinistra", parties_it_historical:"Ulivo/DS", parties_foreign:"Labour/PSOE/SPD"},
+  {id:"socialdemocratico", label:"Socialdemocratico / Centrosinistra", centroid:{ECO:0.35,SOCIAL:0.28,ID:0.3}, description:"...", parties_it_current:"PD centro, M5S ala moderata", parties_it_historical:"PSI riformista", parties_foreign:"PSOE/SPD"},
+  {id:"centrista_tecnico", label:"Centrista liberal / Tecnocratico", centroid:{ECO:0.5,SOCIAL:0.45,ID:0.4}, description:"...", parties_it_current:"Azione, Italia Viva", parties_it_historical:"DC (centristi)", parties_foreign:"En Marche"},
+  {id:"m5s_like", label:"Populismo trasversale / M5S-like", centroid:{ECO:0.45,SOCIAL:0.45,ID:0.45}, description:"...", parties_it_current:"Movimento 5 Stelle", parties_it_historical:"movimenti populisti", parties_foreign:"movimenti populisti"},
+  {id:"centrodestra_liberale", label:"Centro-destra liberale", centroid:{ECO:0.72,SOCIAL:0.5,ID:0.55}, description:"...", parties_it_current:"Forza Italia (ala liberale), Azione", parties_it_historical:"Partiti liberali", parties_foreign:"Conservative-liberal"},
+  {id:"destra_conservatrice", label:"Destra conservatrice", centroid:{ECO:0.78,SOCIAL:0.75,ID:0.6}, description:"...", parties_it_current:"Fratelli d'Italia, Forza Italia (area cons.)", parties_it_historical:"MSI", parties_foreign:"Conservative parties"},
+  {id:"destra_sovranista", label:"Destra sovranista", centroid:{ECO:0.82,SOCIAL:0.7,ID:0.85}, description:"...", parties_it_current:"Lega, Fratelli d'Italia", parties_it_historical:"movimenti nazionalisti", parties_foreign:"RN/Vox"},
+  {id:"libertario", label:"Libertario / Individualista", centroid:{ECO:0.9,SOCIAL:0.35,ID:0.4}, description:"...", parties_it_current:"Partito Libertario", parties_it_historical:"correnti liberali", parties_foreign:"Movimenti libertari"},
+  {id:"autoritario", label:"Autoritario / Tradizionalista", centroid:{ECO:0.85,SOCIAL:0.9,ID:0.8}, description:"...", parties_it_current:"forme radicali minori", parties_it_historical:"forze autoritarie", parties_foreign:"estrema destra radicale"}
+];
+
+function derivedAxes(areaVals){
+  const ECO = ((areaVals.area1.norm||0)*0.6) + ((areaVals.area2.norm||0)*0.4);
+  const SOCIAL = (((areaVals.area6.norm||0) + (areaVals.area4.norm||0) + (areaVals.area8.norm||0))/3);
+  const ID = (((areaVals.area5.norm||0) + (areaVals.area3.norm||0))/2);
+  return {ECO,SOCIAL,ID};
+}
+function dist3(a,b){ return Math.sqrt(Math.pow(a.ECO-b.ECO,2)+Math.pow(a.SOCIAL-b.SOCIAL,2)+Math.pow(a.ID-b.ID,2)); }
+function matchProfiles(areaVals){
+  const axes = derivedAxes(areaVals);
+  const dists = profileBank.map(p=>({id:p.id,label:p.label,desc:p.description,parties_it_current:p.parties_it_current,parties_it_historical:p.parties_it_historical,parties_foreign:p.parties_foreign, distance:dist3(axes,p.centroid)}));
+  dists.sort((a,b)=>a.distance-b.distance);
+  return {primary:dists[0], secondary:dists[1], axes};
+}
+
+/* --------------------------
+   8) Render result + share link + pdf
+   -------------------------- */
+function orientationLabel(norm){
+  if(norm===null) return "Non risposto";
+  if(norm<=0.33) return "Sinistra (tendenza forte)";
+  if(norm<=0.66) return "Centro / Moderato";
+  return "Destra (tendenza forte)";
+}
+
+function axisLabel(v){
+  if(v<=0.33) return "Più verso sinistra/progressista";
+  if(v<=0.66) return "Equilibrato/centrale";
+  return "Più verso destra/conservatore";
+}
+
+function renderResult(areaVals, matched){
+  document.getElementById('resultCard').style.display='block';
+  const primary = matched.primary, secondary = matched.secondary;
+  const primaryProfile = profileBank.find(p=>p.id===primary.id);
+  const secondaryProfile = profileBank.find(p=>p.id===secondary.id);
+
+  document.getElementById('profilesBlock').innerHTML = `
+    <div class="profiles">
+      <div class="profileCard">
+        <div class="profile-title"><strong>Profilo principale:</strong> ${primary.label}</div>
+        <div class="small">${primaryProfile.description}</div>
+        <p class="muted"><strong>Partiti italiani (2025):</strong> <span class="parties">${primary.parties_it_current}</span></p>
+        <p class="muted"><strong>Partiti storici affini:</strong> ${primary.parties_it_historical}</p>
+        <p class="muted"><strong>Partiti/leader esteri:</strong> ${primary.parties_foreign}</p>
+      </div>
+      <div class="profileCard">
+        <div class="profile-title"><strong>Profilo affine:</strong> ${secondary.label}</div>
+        <div class="small">${secondaryProfile.description}</div>
+        <p class="muted"><strong>Partiti italiani (2025):</strong> <span class="parties">${secondary.parties_it_current}</span></p>
+        <p class="muted"><strong>Partiti storici affini:</strong> ${secondary.parties_it_historical}</p>
+        <p class="muted"><strong>Partiti/leader esteri:</strong> ${secondary.parties_foreign}</p>
+      </div>
+    </div>
+  `;
+
+  // area textual summary
+  let html = '<h3>Orientamenti per area</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+  areas.forEach(a=>{
+    const av = areaVals[a.id];
+    html += `<div><strong>${a.title}:</strong> <div class="small">${orientationLabel(av.norm)}</div></div>`;
+  });
+  html += `</div><hr><div class="small"><strong>Assi derivati:</strong> ECO=${axisLabel(matched.axes.ECO)}, SOCIAL=${axisLabel(matched.axes.SOCIAL)}, ID=${axisLabel(matched.axes.ID)}</div>`;
+  document.getElementById('areasSummary').innerHTML = html;
+
+  // create shareable payload & URL
+  const payload = {
+    primary:{id:primary.id,label:primary.label,parties_it:primary.parties_it_current},
+    secondary:{id:secondary.id,label:secondary.label,parties_it:secondary.parties_it_current},
+    areas: Object.fromEntries(Object.entries(areaVals).map(([k,v])=>[k,{raw:v.rawAvg===null?null:parseFloat(v.rawAvg.toFixed(2)), orient:orientationLabel(v.norm)}])),
+    axes: matched.axes
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const shareUrl = `${location.origin}${location.pathname}?r=${encoded}`;
+  copyLinkBtn.onclick = ()=>{ navigator.clipboard.writeText(shareUrl).then(()=> alert("Link copiato negli appunti!")); };
+
+  // download pdf
+  downloadPdfBtn.onclick = ()=> {
+    const opt = { margin:0.5, filename: 'profilo_politico.pdf', html2canvas:{scale:2}, jsPDF:{unit:'in',format:'a4',orientation:'portrait'} };
+    html2pdf().set(opt).from(document.getElementById('resultCard')).save();
+  };
+}
+
+/* --------------------------
+   9) Calculate handler
+   -------------------------- */
+function onCalculate(e){
+  e.preventDefault();
+  const areaVals = computeAreas();
+  // if missing answers (shouldn't happen due to validation) allow confirm
+  let incomplete=false; for(const k in areaVals) if(areaVals[k].norm===null) incomplete=true;
+  if(incomplete && !confirm("Ci sono risposte mancanti. Procedere comunque?")) return;
+  const matched = matchProfiles(areaVals);
+  renderResult(areaVals, matched);
+}
+
+/* --------------------------
+   10) Share link prefill: on load, if param ?r=... present decode and show result
+   -------------------------- */
+function tryLoadFromUrl(){
+  const params = new URLSearchParams(window.location.search);
+  const r = params.get('r');
+  if(!r) return;
+  try{
+    const decoded = decodeURIComponent(escape(atob(r)));
+    const payload = JSON.parse(decoded);
+    // show a minimal result view from payload (no recalculation)
+    document.getElementById('resultCard').style.display='block';
+    document.getElementById('profilesBlock').innerHTML = `
+      <div class="profiles">
+        <div class="profileCard">
+          <div class="profile-title"><strong>Profilo principale:</strong> ${payload.primary.label}</div>
+          <div class="small">Partiti (Italia 2025): ${payload.primary.parties_it}</div>
+        </div>
+        <div class="profileCard">
+          <div class="profile-title"><strong>Profilo affine:</strong> ${payload.secondary.label}</div>
+          <div class="small">Partiti (Italia 2025): ${payload.secondary.parties_it}</div>
+        </div>
+      </div>
+    `;
+    let html = '<h3>Orientamenti per area</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+    for(const [k,v] of Object.entries(payload.areas)){
+      const areaObj = areas.find(a=>a.id===k);
+      html += `<div><strong>${areaObj?areaObj.title:k}:</strong> <div class="small">${v.orient}</div></div>`;
+    }
+    html += `</div>`;
+    document.getElementById('areasSummary').innerHTML = html;
+    // setup copy link button to current URL
+    copyLinkBtn.onclick = ()=>{ navigator.clipboard.writeText(location.href).then(()=> alert("Link copiato!")); };
+    downloadPdfBtn.onclick = ()=> { const opt = { margin:0.5, filename:'profilo_politico.pdf', html2canvas:{scale:2}, jsPDF:{unit:'in',format:'a4',orientation:'portrait'} }; html2pdf().set(opt).from(document.getElementById('resultCard')).save(); };
+  }catch(err){ console.warn("Impossibile caricare il risultato dal link:",err); }
+}
+
+/* --------------------------
+   11) Wire buttons
+   -------------------------- */
+calcBtn.addEventListener('click', onCalculate);
+tryLoadFromUrl();
+checkComplete();
+
+</script>
+</body>
+</html>
