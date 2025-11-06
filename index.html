@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Test di Orientamento Politico - Versione Completa</title>
+<style>
+  body { font-family: "Segoe UI", Roboto, Arial; background:#f6f8fb; color:#111; margin:0; padding:18px; }
+  header { background:#0d6efd; color:#fff; padding:14px 18px; border-radius:8px; text-align:center; font-size:1.15rem; }
+  .container { max-width:1100px; margin:18px auto; }
+  section.card { background:#fff; border-radius:10px; padding:14px; box-shadow:0 6px 18px rgba(16,24,40,0.06); margin-bottom:14px; }
+  h2 { color:#0d6efd; margin:0 0 10px 0; }
+  label.q { display:block; margin:8px 0 6px 0; font-weight:600; }
+  select { width:100%; padding:8px; border-radius:6px; border:1px solid #d9e2ec; background:#fff; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .btn { display:inline-block; background:#0d6efd; color:#fff; padding:10px 14px; border-radius:8px; border:none; cursor:pointer; margin-top:8px; }
+  .btn[disabled] { background:#93c0ff; cursor: not-allowed; }
+  #result { margin-top:12px; padding:16px; background:linear-gradient(180deg,#f0f6ff,#f8fbff); border-radius:8px; }
+  ul { margin:6px 0 0 18px; }
+  .small { font-size:0.95rem; color:#333; }
+  .profile-title { font-size:1.05rem; color:#073763; margin:6px 0; }
+  .parties { font-weight:700; color:#0b5ed7; }
+  .legend-item { margin-bottom:6px; }
+  .two-profiles { display:flex; gap:12px; flex-wrap:wrap; }
+  .profile-card { background:#fff; padding:10px; border-radius:8px; box-shadow:0 4px 10px rgba(16,24,40,0.04); flex:1 1 48%; }
+  @media (max-width:900px) { .row { grid-template-columns:1fr; } .two-profiles { flex-direction:column; } }
+</style>
+</head>
+<body>
+<header>🗳️ Test di Orientamento Politico — Versione Completa</header>
+
+<div class="container">
+
+  <section class="card" id="intro">
+    <h2>Come funziona</h2>
+    <p class="small">Rispondi alle 72 affermazioni, 8 per ciascuna delle 9 aree tematiche. Usa le opzioni <strong>“Seleziona” → 1 → 2 → 3 → 4 → 5</strong> (1 = completamente in disaccordo, 5 = completamente d'accordo). Alcune domande sono formulate in modo che un "5" indichi una posizione tipica della sinistra: queste verranno automaticamente <em>invertite</em> internamente (6 - valore) per uniformare la scala in cui, alla fine, 1 indica orientamento più verso la sinistra e 5 verso la destra.</p>
+    <p class="small">Il pulsante <strong>Calcola il profilo</strong> sarà abilitato solo quando tutte le 72 domande saranno completate. Il pulsante <strong>Reset</strong> riporterà tutte le domande a <em>Seleziona</em>.</p>
+  </section>
+
+  <form id="testForm">
+    <!-- Le 9 aree e le 72 domande vengono renderizzate via JS -->
+  </form>
+
+  <div style="text-align:center; margin-bottom:14px;">
+    <button id="calcBtn" class="btn" disabled>Calcola il profilo</button>
+    <button id="resetBtn" class="btn" style="background:#6c757d; margin-left:8px;">Reset</button>
+  </div>
+
+  <section class="card" id="result" style="display:none;">
+    <div id="profilesContainer"></div>
+    <div id="areasSummary" class="small" style="margin-top:10px;"></div>
+  </section>
+
+</div>
+
+<script>
+/* =============================
+   1) Domande per area (72)
+   ============================= */
+const areas = [
+  { id:"area1", title:"Economia e lavoro", questions:[
+    "Lo Stato deve intervenire attivamente per ridistribuire la ricchezza e ridurre le disuguaglianze.",
+    "Le tasse sui grandi patrimoni e profitti aziendali dovrebbero essere aumentate.",
+    "Le privatizzazioni hanno migliorato l’efficienza economica del Paese.",
+    "Il salario minimo legale è necessario per tutelare i lavoratori.",
+    "Le imprese dovrebbero avere meno vincoli sindacali per essere competitive.",
+    "Le cooperative e le imprese sociali dovrebbero essere favorite rispetto ai grandi gruppi industriali.",
+    "Gli incentivi alle aziende dovrebbero essere legati alla stabilità dell’occupazione.",
+    "Il mercato, e non lo Stato, deve determinare salari e prezzi."
+  ]},
+  { id:"area2", title:"Stato, tasse e welfare", questions:[
+    "Lo Stato deve garantire sanità e istruzione gratuite e di alta qualità per tutti.",
+    "Chi guadagna di più dovrebbe contribuire con tasse proporzionalmente più alte.",
+    "Il welfare crea dipendenza e scoraggia l’iniziativa individuale.",
+    "È giusto ridurre le tasse anche a costo di tagliare la spesa pubblica.",
+    "Il reddito di cittadinanza o misure simili sono strumenti utili.",
+    "I servizi pubblici dovrebbero essere gestiti da aziende private sotto controllo statale.",
+    "La spesa pubblica per la difesa dovrebbe aumentare.",
+    "La burocrazia è un ostacolo maggiore rispetto alla mancanza di fondi."
+  ]},
+  { id:"area3", title:"Europa e politica estera", questions:[
+    "L’Italia deve restare pienamente integrata nell’Unione Europea.",
+    "L’euro ha portato più vantaggi che svantaggi.",
+    "L’Italia dovrebbe poter violare temporaneamente le regole europee di bilancio per investire in crescita.",
+    "La NATO è una garanzia di sicurezza per l’Italia.",
+    "L’Italia dovrebbe adottare una politica estera più autonoma dagli USA.",
+    "L’Unione Europea dovrebbe avere una propria difesa comune.",
+    "Le sanzioni economiche sono uno strumento efficace in politica estera.",
+    "La sovranità nazionale deve prevalere su quella europea."
+  ]},
+  { id:"area4", title:"Ambiente e sviluppo sostenibile", questions:[
+    "Le politiche ambientali devono essere prioritarie anche se rallentano la crescita economica.",
+    "Il nucleare è una soluzione sostenibile per ridurre le emissioni.",
+    "Le tasse ambientali dovrebbero colpire le imprese più inquinanti.",
+    "Lo Stato deve investire di più in energie rinnovabili.",
+    "Gli agricoltori devono essere sostenuti nella transizione ecologica.",
+    "L’ambiente è troppo spesso usato come pretesto per nuove tasse.",
+    "I trasporti pubblici dovrebbero essere potenziati anche a discapito dell’uso dell’auto privata.",
+    "Le grandi opere infrastrutturali (es. TAV, Ponte sullo Stretto, nuove autostrade) dovrebbero essere realizzate più rapidamente, anche se ciò può comportare un impatto ambientale maggiore."
+  ]},
+  { id:"area5", title:"Immigrazione e identità", questions:[
+    "L’immigrazione è una risorsa economica e culturale.",
+    "L’Italia deve accogliere solo chi ha diritto all’asilo.",
+    "Le frontiere dovrebbero essere chiuse per difendere il lavoro nazionale.",
+    "Gli stranieri devono integrarsi rispettando la nostra cultura e le nostre leggi.",
+    "Lo ius soli (cittadinanza ai nati in Italia) va approvato.",
+    "La presenza di immigrati aumenta l’insicurezza.",
+    "L’Italia deve contribuire a un sistema europeo di redistribuzione dei migranti.",
+    "L’identità italiana è messa a rischio da un’eccessiva globalizzazione culturale."
+  ]},
+  { id:"area6", title:"Diritti civili e società", questions:[
+    "Le coppie omosessuali devono avere gli stessi diritti matrimoniali delle coppie etero.",
+    "L’aborto è un diritto da difendere.",
+    "L’obiezione di coscienza deve essere tutelata in ogni ambito.",
+    "Lo Stato non deve interferire nelle scelte personali di fine vita.",
+    "L’educazione sessuale deve essere obbligatoria nelle scuole.",
+    "Le famiglie tradizionali devono essere privilegiate nelle politiche sociali.",
+    "La parità di genere è ancora lontana e richiede interventi mirati.",
+    "Le politiche LGBT+ ricevono già troppa attenzione rispetto ad altri temi."
+  ]},
+  { id:"area7", title:"Ordine, giustizia e sicurezza", questions:[
+    "Le pene devono essere più severe per reati gravi.",
+    "La certezza della pena è più importante della rieducazione.",
+    "Il controllo dello Stato sui cittadini deve aumentare per garantire la sicurezza.",
+    "La corruzione è più grave dell’evasione fiscale.",
+    "La giustizia dovrebbe essere più rapida, anche a costo di ridurre le garanzie.",
+    "Le forze dell’ordine dovrebbero avere più poteri operativi.",
+    "Il carcere è uno strumento inefficace e va sostituito da misure alternative.",
+    "I magistrati dovrebbero essere più controllati dal potere politico."
+  ]},
+  { id:"area8", title:"Etica, tecnologia e cultura", questions:[
+    "L’intelligenza artificiale deve essere regolata dallo Stato per evitare abusi.",
+    "La religione cattolica ha un ruolo importante nella cultura italiana.",
+    "Le fake news dovrebbero essere perseguite per legge.",
+    "L’arte e la cultura dovrebbero ricevere più fondi pubblici.",
+    "La libertà di espressione deve essere assoluta, anche per opinioni offensive.",
+    "Le piattaforme digitali dovrebbero pagare più tasse in Italia.",
+    "Le tradizioni locali vanno tutelate contro l’omologazione globale.",
+    "La scienza deve prevalere su ogni credo religioso nelle decisioni pubbliche."
+  ]},
+  { id:"area9", title:"Innovazione sociale e futuro", questions:[
+    "Il reddito di base universale è una buona soluzione per il futuro del lavoro.",
+    "L’automazione va tassata per finanziare la disoccupazione tecnologica.",
+    "Le università dovrebbero essere gratuite per i meritevoli.",
+    "Le start-up dovrebbero ricevere più incentivi pubblici.",
+    "Il lavoro da remoto va favorito anche nel pubblico impiego.",
+    "L’intelligenza artificiale va usata per migliorare i servizi pubblici.",
+    "Le aziende devono rendere pubblici gli impatti ambientali e sociali.",
+    "Le politiche per i giovani devono essere prioritarie rispetto a quelle per gli anziani."
+  ]}
+];
+
+/* =============================
+   2) Inversion map (true = invertire con 6 - valore)
+   segue le scelte concordate
+   ============================= */
+const invertMap = {
+  area1: [true,true,false,true,false,true,true,false],
+  area2: [true,true,false,false,true,false,false,false],
+  area3: [true,true,true,false,false,true,false,false],
+  area4: [true,false,true,true,false,false,false,true], // note: nucleare (dom2) left as pro-destra? here set false to keep as-is
+  area5: [true,false,false,false,true,false,true,false],
+  area6: [true,true,false,true,true,false,false,true],
+  area7: [false,false,false,true,false,false,true,false],
+  area8: [true,false,true,true,false,true,false,true],
+  area9: [true,true,true,false,true,false,true,true]
+};
+
+/* =============================
+   3) Pesi per la media ponderata finale
+   ============================= */
+const weights = {
+  area1: 0.25,
+  area2: 0.15,
+  area3: 0.10,
+  area4: 0.05,
+  area5: 0.15,
+  area6: 0.10,
+  area7: 0.10,
+  area8: 0.05,
+  area9: 0.05
+};
+
+/* =============================
+   4) Rendering del form (Seleziona per default)
+   ============================= */
+function renderForm(){
+  const form = document.getElementById('testForm');
+  areas.forEach((a, ai) => {
+    const sec = document.createElement('section');
+    sec.className = 'card';
+    sec.innerHTML = `<h2>${ai+1}. ${a.title}</h2>`;
+    a.questions.forEach((q, qi) => {
+      const id = `${a.id}_q${qi}`;
+      sec.innerHTML += `
+        <label class="q">${qi+1}. ${q}</label>
+        <select id="${id}" data-area="${a.id}">
+          <option value="">Seleziona</option>
+          <option value="1">1 - Completamente in disaccordo</option>
+          <option value="2">2 - In disaccordo</option>
+          <option value="3">3 - Neutrale</option>
+          <option value="4">4 - D'accordo</option>
+          <option value="5">5 - Completamente d'accordo</option>
+        </select>
+      `;
+    });
+    form.appendChild(sec);
+  });
+  attachListeners();
+}
+renderForm();
+
+/* =============================
+   5) Abilita/disabilita bottone "Calcola"
+   ============================= */
+function attachListeners(){
+  const calcBtn = document.getElementById('calcBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  document.querySelectorAll('select').forEach(s => {
+    s.addEventListener('change', checkComplete);
+  });
+
+  calcBtn.addEventListener('click', onCalculate);
+  resetBtn.addEventListener('click', onReset);
+
+  checkComplete(); // initial
+}
+
+function checkComplete(){
+  const totalSelects = document.querySelectorAll('select').length;
+  let answered = 0;
+  document.querySelectorAll('select').forEach(s => { if(s.value !== "") answered++; });
+  const calcBtn = document.getElementById('calcBtn');
+  if(answered === totalSelects) calcBtn.removeAttribute('disabled');
+  else calcBtn.setAttribute('disabled','disabled');
+}
+
+/* =============================
+   6) Compute area values with normalization
+   returns object areaId -> { rawAvg (1..5) or null, norm (0..1) or null, details }
+   ============================= */
+function computeAreas(){
+  const areaValues = {};
+  areas.forEach(a => {
+    const inv = invertMap[a.id];
+    let sum = 0, count = 0, details = [];
+    for(let qi=0; qi<8; qi++){
+      const sel = document.getElementById(`${a.id}_q${qi}`);
+      const v = sel ? Number(sel.value) : NaN;
+      if(!v){ details.push(null); continue; }
+      const adj = inv[qi] ? (6 - v) : v; // invert where required
+      sum += adj; count++;
+      details.push(adj);
+    }
+    const rawAvg = count>0 ? (sum/count) : null;
+    const norm = rawAvg !== null ? ((rawAvg - 1) / 4) : null; // 0..1 (0=sinistra,1=destra)
+    areaValues[a.id] = { rawAvg, norm, details };
+  });
+  return areaValues;
+}
+
+/* =============================
+   7) Weighted overall score (0..1) - internal use only (not shown)
+   ============================= */
+function weightedScore(areaVals){
+  let tot = 0;
+  for(const k in weights){
+    const v = areaVals[k].norm;
+    tot += ( (v===null?0:v) * weights[k] );
+  }
+  return tot; // 0..1
+}
+
+/* =============================
+   8) Profiles centroids (ECO, SOCIAL, IDENTITY) for distance matching
+   Values 0..1 (0 = sinistra/progressista/globalista, 1 = destra/conservatore/sovranista)
+   We define 10 sample profiles and include descriptions + parties (IT 2025 + historical + foreign with leaders)
+   ============================= */
+const profileBank = [
+  {
+    id:"comunista",
+    label:"Comunista / Egualitario",
+    centroid: {ECO:0.05, SOCIAL:0.35, ID:0.4},
+    description:"Sostegno forte alla proprietà pubblica/controllo dei settori strategici, redistribuzione massiccia, forte welfare.",
+    parties_it_current:"(minoranze di sinistra radicale) Potere al Popolo, Rifondazione Comunista",
+    parties_it_historical:"PCI (Enrico Berlinguer), PSI (ala storica di sinistra)",
+    parties_foreign:"Partiti comunisti/ultra-sinistra (es. alcune formazioni europee)"
+  },
+  {
+    id:"progressista_sx",
+    label:"Progressista di sinistra",
+    centroid:{ECO:0.22, SOCIAL:0.18, ID:0.25},
+    description:"Priorità a giustizia sociale, diritti civili, transizione ecologica e forte stato sociale.",
+    parties_it_current:"PD (Elly Schlein), Alleanza Verdi e Sinistra (Angelo Bonelli, Nicola Fratoianni), +Europa",
+    parties_it_historical:"Ulivo / DS (Romano Prodi, Walter Veltroni)",
+    parties_foreign:"Labour (Regno Unito, Keir Starmer), PSOE (Spagna, Pedro Sánchez), SPD (Germania, Olaf Scholz)"
+  },
+  {
+    id:"socialdemocratico",
+    label:"Socialdemocratico / Centrosinistra",
+    centroid:{ECO:0.35, SOCIAL:0.28, ID:0.3},
+    description:"Economia mista, diritti civili progressisti, pragmatismo europeista e riformista.",
+    parties_it_current:"PD (area centrale), M5S (ala moderata)",
+    parties_it_historical:"PSI (periodo riformista), Partito Socialista Europeo affini",
+    parties_foreign:"PSOE, SPD, Democratic Party (USA, ala moderata)"
+  },
+  {
+    id:"centrista_tecnico",
+    label:"Centrista liberal / Tecnocratico",
+    centroid:{ECO:0.5, SOCIAL:0.45, ID:0.4},
+    description:"Orientamento liberale-moderato, favorevole al mercato regolamentato, innovazione e integrazione europea.",
+    parties_it_current:"Azione (Carlo Calenda), Italia Viva (Matteo Renzi), Forza Italia (ala liberale)",
+    parties_it_historical:"Democrazia Cristiana (alcuni esponenti centristi)",
+    parties_foreign:"En Marche (FR), Renew / Liberal parties"
+  },
+  {
+    id:"m5s_like",
+    label:"Populismo trasversale / M5S-like",
+    centroid:{ECO:0.45, SOCIAL:0.45, ID:0.45},
+    description:"Posizioni miste: scetticismo verso élite, pragmatismo su welfare e riforme, spesso post-ideologico.",
+    parties_it_current:"Movimento 5 Stelle (Giuseppe Conte)",
+    parties_it_historical:"Movimenti populisti/anti-establishment",
+    parties_foreign:"Movimenti populisti europei vari"
+  },
+  {
+    id:"centrodestra_liberale",
+    label:"Centro-destra liberale",
+    centroid:{ECO:0.72, SOCIAL:0.5, ID:0.55},
+    description:"Economia di mercato, moderazione sociale, apertura a UE ma con attenzione agli interessi nazionali.",
+    parties_it_current:"Forza Italia (Antonio Tajani, area liberale), Azione (Carlo Calenda - settore economicamente liberale)",
+    parties_it_historical:"Partiti liberali storici",
+    parties_foreign:"Conservative-liberal parties"
+  },
+  {
+    id:"destra_conservatrice",
+    label:"Destra conservatrice",
+    centroid:{ECO:0.78, SOCIAL:0.75, ID:0.6},
+    description:"Valori tradizionali, ordine, sicurezza, attenzione a identità nazionale con approccio conservatore ai temi etici.",
+    parties_it_current:"Fratelli d'Italia (Giorgia Meloni), Forza Italia (ala conservatrice)",
+    parties_it_historical:"MSI (Giorgio Almirante), Destra storica",
+    parties_foreign:"Conservative parties (UK Conservative, CDU - esponenti conservatori)"
+  },
+  {
+    id:"destra_sovranista",
+    label:"Destra sovranista",
+    centroid:{ECO:0.82, SOCIAL:0.7, ID:0.85},
+    description:"Sovranità nazionale, controllo immigrazione, forte enfasi su sicurezza e politiche protezionistiche.",
+    parties_it_current:"Lega (Matteo Salvini), Fratelli d'Italia (Giorgia Meloni - area sovranista)",
+    parties_it_historical:"Movimenti nazionalisti",
+    parties_foreign:"Rassemblement National (FR - Marine Le Pen), Vox (ES)"
+  },
+  {
+    id:"libertario",
+    label:"Libertario / Individualista",
+    centroid:{ECO:0.9, SOCIAL:0.35, ID:0.4},
+    description:"Riduzione del ruolo dello Stato in economia, massimo spazio alle libertà individuali.",
+    parties_it_current:"Partito Libertario Italiano, correnti liberali",
+    parties_it_historical:"Correnti liberal-classiche",
+    parties_foreign:"Libertarian movements"
+  },
+  {
+    id:"autoritario",
+    label:"Autoritario / Tradizionalista",
+    centroid:{ECO:0.85, SOCIAL:0.9, ID:0.8},
+    description:"Ordine e valori tradizionali al centro, tendenza a istituzioni forti e controllo più ampio.",
+    parties_it_current:"Movimenti radicali (es. formazioni minoritarie di estrema destra)",
+    parties_it_historical:"Forze autoritarie storiche",
+    parties_foreign:"Estrema destra radicale"
+  }
+];
+
+/* =============================
+   9) utility: Euclidean distance
+   ============================= */
+function dist3(a,b){
+  return Math.sqrt(
+    Math.pow(a.ECO - b.ECO,2) +
+    Math.pow(a.SOCIAL - b.SOCIAL,2) +
+    Math.pow(a.ID - b.ID,2)
+  );
+}
+
+/* =============================
+   10) Convert areaValues -> derived axes (ECO, SOCIAL, ID) in 0..1
+   - ECO: economia (area1 + area2 weighted)
+   - SOCIAL: diritti + ambiente + etica (area6,area4,area8)
+   - ID: identità/sovranità (area5 + area3)
+   ============================= */
+function derivedAxes(areaVals){
+  const ECO = ((areaVals.area1.norm || 0) * 0.6) + ((areaVals.area2.norm || 0) * 0.4);
+  const SOCIAL = (((areaVals.area6.norm || 0) + (areaVals.area4.norm || 0) + (areaVals.area8.norm || 0)) / 3);
+  const ID = (((areaVals.area5.norm || 0) + (areaVals.area3.norm || 0)) / 2);
+  return {ECO, SOCIAL, ID};
+}
+
+/* =============================
+   11) match profiles: compute derived axes and find two closest profiles
+   ============================= */
+function matchProfiles(areaVals){
+  const axes = derivedAxes(areaVals);
+  // For profiles, map our axes names to profile centroid field names
+  // Prepare a comparable vector for each profile: {ECO,SOCIAL,ID}
+  const distances = profileBank.map(p => {
+    const centroid = {ECO:p.centroid.ECO, SOCIAL:p.centroid.SOCIAL, ID:p.centroid.ID};
+    const d = dist3({ECO:axes.ECO, SOCIAL:axes.SOCIAL, ID:axes.ID}, centroid);
+    return {id:p.id, label:p.label, desc:p.description, parties_it_current:p.parties_it_current, parties_it_historical:p.parties_it_historical, parties_foreign:p.parties_foreign, distance:d};
+  });
+  distances.sort((a,b)=>a.distance-b.distance);
+  const primary = distances[0];
+  const secondary = distances[1];
+  return {primary, secondary, axes};
+}
+
+/* =============================
+   12) Render result (no numeric overall score shown)
+   ============================= */
+function renderResult(areaVals, primary, secondary, axes){
+  document.getElementById('result').style.display = 'block';
+  const container = document.getElementById('profilesContainer');
+  // primary card
+  const primaryProfile = profileBank.find(p=>p.id===primary.id);
+  const secondaryProfile = profileBank.find(p=>p.id===secondary.id);
+
+  container.innerHTML = `
+    <div class="two-profiles">
+      <div class="profile-card">
+        <div class="profile-title">Profilo principale: <strong>${primary.label}</strong></div>
+        <div class="small">${primaryProfile.description}</div>
+        <p class="small"><strong>Partiti italiani (2025) affiliati:</strong> <span class="parties">${primary.parties_it_current}</span></p>
+        <p class="small"><strong>Partiti storici affini:</strong> ${primary.parties_it_historical}</p>
+        <p class="small"><strong>Partiti/leader esteri affini (es.):</strong> ${primary.parties_foreign}</p>
+        <p class="small"><strong>Parole chiave:</strong> ${keywordsFor(primary.id)}</p>
+      </div>
+      <div class="profile-card">
+        <div class="profile-title">Profilo affine: <strong>${secondary.label}</strong></div>
+        <div class="small">${secondaryProfile.description}</div>
+        <p class="small"><strong>Partiti italiani (2025) affiliati:</strong> <span class="parties">${secondary.parties_it_current}</span></p>
+        <p class="small"><strong>Partiti storici affini:</strong> ${secondary.parties_it_historical}</p>
+        <p class="small"><strong>Partiti/leader esteri affini (es.):</strong> ${secondary.parties_foreign}</p>
+        <p class="small"><strong>Parole chiave:</strong> ${keywordsFor(secondary.id)}</p>
+      </div>
+    </div>
+  `;
+  // areas textual summary
+  const areasSummary = document.getElementById('areasSummary');
+  let html = '<h3>Orientamenti per area (testuali)</h3>';
+  html += '<div class="row">';
+  areas.forEach(a => {
+    const av = areaVals[a.id];
+    const orient = orientationLabel(av.norm);
+    html += `<div><strong>${a.title}:</strong> <div class="small">${orient}</div></div>`;
+  });
+  html += '</div>';
+  html += `<hr><div class="small"><strong>Assi derivati (riassunto):</strong> Economico=${axisLabel(axes.ECO)}, Sociale=${axisLabel(axes.SOCIAL)}, Identità=${axisLabel(axes.ID)}</div>`;
+  areasSummary.innerHTML = html;
+  // scroll
+  document.getElementById('result').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* helper for keywords */
+function keywordsFor(profileId){
+  const map = {
+    comunista:"redistribuzione, controllo pubblico, sindacato, welfare ampio",
+    progressista_sx:"welfare, diritti civili, Europa, clima, uguaglianza",
+    socialdemocratico:"economia mista, riformismo, Europa, tutele sociali",
+    centrista_tecnico:"mercato regolato, innovazione, Europa, efficienza",
+    m5s_like:"populismo pragmatico, anti-élite, sperimentazione politica",
+    centrodestra_liberale:"liberalismo economico, riforme pro-business, moderazione",
+    destra_conservatrice:"ordine, tradizione, sicurezza, identità nazionale",
+    destra_sovranista:"sovranità, controllo immigrazione, nazionalismo economico",
+    libertario:"libertà individuale, mercato, deregulation",
+    autoritario:"ordine forte, controllo, valori tradizionali"
+  };
+  return map[profileId] || "";
+}
+
+/* orientation label helper */
+function orientationLabel(norm){
+  if(norm === null) return "Non risposto";
+  if(norm <= 0.33) return `Sinistra (tendenza forte)`;
+  if(norm <= 0.66) return `Centro / moderato`;
+  return `Destra (tendenza forte)`;
+}
+
+/* axis label helper */
+function axisLabel(v){
+  if(v <= 0.33) return "Più verso sinistra/progressista";
+  if(v <= 0.66) return "Equilibrato/centrale";
+  return "Più verso destra/conservatore";
+}
+
+/* =============================
+   13) Calculate handler
+   ============================= */
+function onCalculate(e){
+  e.preventDefault();
+  const areaVals = computeAreas();
+  const weighted = weightedScore(areaVals); // internal only
+  const matched = matchProfiles(areaVals);
+  renderResult(areaVals, matched.primary, matched.secondary, matched.axes);
+}
+
+/* =============================
+   14) Reset handler
+   ============================= */
+function onReset(e){
+  e.preventDefault();
+  if(!confirm("Vuoi resettare tutte le risposte a 'Seleziona'?")) return;
+  document.querySelectorAll('select').forEach(s => s.value = "");
+  document.getElementById('result').style.display = 'none';
+  checkComplete();
+}
+
+/* =============================
+   15) Wire buttons & inputs
+   ============================= */
+document.getElementById('calcBtn').addEventListener('click', onCalculate);
+document.getElementById('resetBtn').addEventListener('click', onReset);
+
+// keep checkComplete reactive
+document.addEventListener('change', (ev) => {
+  if(ev.target && ev.target.tagName === "SELECT") checkComplete();
+});
+
+/* end script */
+</script>
+
+</body>
+</html>
