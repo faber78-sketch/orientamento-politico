@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test di Orientamento Politico</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: #f7f9fb;
+      color: #1c1c1c;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+    header {
+      background: #003366;
+      color: #fff;
+      text-align: center;
+      padding: 1.5rem;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    main {
+      max-width: 800px;
+      margin: auto;
+      padding: 1.5rem;
+      background: white;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+    section {
+      margin-bottom: 2rem;
+    }
+    h2 {
+      color: #003366;
+      border-bottom: 2px solid #003366;
+      padding-bottom: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .question {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin: 0.3rem 0;
+    }
+    select {
+      width: 100%;
+      padding: 0.4rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background: #003366;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #00254d;
+    }
+    #result {
+      display: none;
+      margin-top: 2rem;
+      padding: 1.2rem;
+      border-radius: 10px;
+      background: #eef3f9;
+      border-left: 6px solid #003366;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    @media (max-width: 600px) {
+      main { padding: 1rem; }
+      header h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧭 Test di Orientamento Politico</h1>
+  </header>
+
+  <main>
+    <section id="intro">
+      <p>
+        Questo test è stato progettato per aiutarti a comprendere il tuo orientamento politico complessivo in modo scientifico e imparziale.
+        Non si tratta di un sondaggio elettorale, ma di un profilo valoriale che analizza come le tue opinioni si distribuiscono lungo alcuni assi fondamentali del pensiero politico contemporaneo.
+      </p>
+    </section>
+
+    <section id="test">
+      <h2>1. Economia e lavoro</h2>
+      <div class="question">
+        <label>1. Lo Stato dovrebbe intervenire per ridurre le disuguaglianze economiche.</label>
+        <select id="q1">
+          <option value="">Seleziona</option>
+          <option value="1">1 - Per niente d'accordo</option>
+          <option value="2">2</option>
+          <option value="3">3 - Neutro</option>
+          <option value="4">4</option>
+          <option value="5">5 - Completamente d'accordo</option>
+        </select>
+      </div>
+      <div class="question">
+        <label>2. Le grandi opere infrastrutturali (come alta velocità, ponti o autostrade) sono indispensabili per lo sviluppo economico del Paese.</label>
+        <select id="q2">
+          <option value="">Seleziona</option>
+          <option value="1">1 - Per niente d'accordo</option>
+          <option value="2">2</option>
+          <option value="3">3 - Neutro</option>
+          <option value="4">4</option>
+          <option value="5">5 - Completamente d'accordo</option>
+        </select>
+      </div>
+
+      <h2>2. Diritti civili e società</h2>
+      <div class="question">
+        <label>3. I matrimoni tra persone dello stesso sesso dovrebbero essere equiparati a quelli tradizionali.</label>
+        <select id="q3">
+          <option value="">Seleziona</option>
+          <option value="1">1 - Per niente d'accordo</option>
+          <option value="2">2</option>
+          <option value="3">3 - Neutro</option>
+          <option value="4">4</option>
+          <option value="5">5 - Completamente d'accordo</option>
+        </select>
+      </div>
+
+      <h2>3. Etica, tecnologia e cultura</h2>
+      <div class="question">
+        <label>4. Le piattaforme digitali dovrebbero pagare più tasse in Italia per sostenere la cultura e l’informazione locale.</label>
+        <select id="q4">
+          <option value="">Seleziona</option>
+          <option value="1">1 - Per niente d'accordo</option>
+          <option value="2">2</option>
+          <option value="3">3 - Neutro</option>
+          <option value="4">4</option>
+          <option value="5">5 - Completamente d'accordo</option>
+        </select>
+      </div>
+
+      <button onclick="calcolaRisultato()">Calcola risultato</button>
+      <div id="result"></div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="metodi.html">📘 Metodi di riferimento e profili politici</a><br>
+    © 2025 - Analisi Politica Comparata
+  </footer>
+
+  <script>
+    function calcolaRisultato() {
+      const risposte = [];
+      for (let i = 1; i <= 4; i++) {
+        const val = document.getElementById("q" + i).value;
+        if (val) risposte.push(parseInt(val));
+      }
+      if (risposte.length < 4) {
+        alert("Per favore rispondi a tutte le domande prima di calcolare il risultato.");
+        return;
+      }
+
+      const media = risposte.reduce((a, b) => a + b, 0) / risposte.length;
+      const resultBox = document.getElementById("result");
+      resultBox.style.display = "block";
+
+      let profilo = "";
+      let descrizione = "";
+      let partiti = "";
+
+      if (media <= 2) {
+        profilo = "Socialista progressista";
+        descrizione =
+          "Credi in un ruolo forte dello Stato, nella giustizia sociale, nei diritti civili e in una società inclusiva. Sostieni politiche pubbliche attive per uguaglianza e tutela dei lavoratori.";
+        partiti =
+          "🇮🇹 Storici: PSI, DS — Attuali: PD, Sinistra Italiana — 🌍 Internazionali: SPD (Germania), Labour (UK), PSOE (Spagna)";
+      } else if (media <= 3.5) {
+        profilo = "Socialdemocratico europeo";
+        descrizione =
+          "Cerchi equilibrio tra mercato e diritti sociali. Sostieni la regolazione pubblica dove serve, l'innovazione e l'inclusione come strumenti di progresso.";
+        partiti =
+          "🇮🇹 Storici: PSI, DS — Attuali: PD, Articolo Uno — 🌍 Internazionali: SPD (Germania), PSOE (Spagna), Labour (UK)";
+      } else {
+        profilo = "Liberal-conservatore europeo";
+        descrizione =
+          "Credi nel libero mercato, nella responsabilità individuale e in una società fondata su tradizioni e regole chiare, con uno Stato che interviene il meno possibile.";
+        partiti =
+          "🇮🇹 Storici: DC, MSI — Attuali: Forza Italia, Fratelli d’Italia, Lega — 🌍 Internazionali: CDU (Germania), Partito Popolare (Spagna), Repubblicani (USA)";
+      }
+
+      resultBox.innerHTML = `
+        <h3>🧭 Profilo più affine: ${profilo}</h3>
+        <p>${descrizione}</p>
+        <p><strong>Partiti affini storici e attuali:</strong><br>${partiti}</p>
+        <button onclick="scaricaPDF()">📄 Scarica il risultato in PDF</button>
+        <button onclick="condividiRisultato()">🔗 Condividi il risultato</button>
+      `;
+    }
+
+    function scaricaPDF() {
+      alert("Funzione di esportazione PDF in fase di attivazione su GitHub Pages.");
+    }
+
+    function condividiRisultato() {
+      alert("Funzione di condivisione disponibile nella versione online del test.");
+    }
+  </script>
+</body>
+</html>
