@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questionario Orientamento Politico</title>
+<style>
+  body {
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background: #f9fafc;
+    color: #222;
+  }
+  header {
+    background: #004aad;
+    color: white;
+    padding: 1.2em;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0.3em 0;
+  }
+  main {
+    max-width: 1000px;
+    margin: auto;
+    padding: 1em;
+  }
+  section {
+    background: white;
+    margin: 1em 0;
+    padding: 1em 1.5em;
+    border-radius: 12px;
+    box-shadow: 0 0 6px rgba(0,0,0,0.1);
+  }
+  h2 {
+    color: #003c8f;
+    margin-top: 0;
+  }
+  label {
+    display: block;
+    margin-top: 0.5em;
+  }
+  select {
+    width: 100%;
+    padding: 0.5em;
+    margin-top: 0.2em;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: #fdfdfd;
+  }
+  button {
+    background-color: #004aad;
+    color: white;
+    padding: 0.7em 1.4em;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-top: 1em;
+  }
+  button:hover {
+    background-color: #003b8f;
+  }
+  #risultato {
+    margin-top: 1.5em;
+    background: #e7f0ff;
+    padding: 1em;
+    border-radius: 12px;
+  }
+  footer {
+    text-align: center;
+    background: #004aad;
+    color: white;
+    padding: 1em;
+    font-size: 0.9em;
+  }
+  footer a {
+    color: #ffda79;
+    text-decoration: none;
+  }
+  footer a:hover {
+    text-decoration: underline;
+  }
+  @media (max-width: 700px) {
+    body { font-size: 0.95em; }
+    section { padding: 1em; }
+  }
+</style>
+</head>
+
+<body>
+<header>
+  <h1>Questionario di Orientamento Politico</h1>
+  <p>Scopri a quale area politica si avvicinano le tue idee</p>
+</header>
+
+<main>
+  <section>
+    <p>
+      Il seguente questionario è composto da 9 aree tematiche.  
+      Per ogni affermazione, seleziona il livello di accordo da 1 a 5:
+    </p>
+    <ul>
+      <li><b>1</b> = Completamente in disaccordo</li>
+      <li><b>2</b> = In disaccordo</li>
+      <li><b>3</b> = Né d’accordo né in disaccordo</li>
+      <li><b>4</b> = D’accordo</li>
+      <li><b>5</b> = Completamente d’accordo</li>
+    </ul>
+    <p>
+      Alla fine otterrai un profilo politico sintetico.  
+      <a href="metodi.html" target="_blank">Consulta qui i metodi e i profili di riferimento.</a>
+    </p>
+  </section>
+
+  <div id="domande"></div>
+
+  <button onclick="calcolaRisultato()">Calcola il tuo profilo politico</button>
+
+  <div id="risultato"></div>
+</main>
+
+<footer>
+  <p>
+    <a href="metodi.html">Metodi e profili politici</a> | 
+    <a href="#" onclick="resetForm()">Reset questionario</a><br>
+    © 2025 Analisi Orientamento Politico – Progetto civico e didattico
+  </p>
+</footer>
+
+<script>
+const aree = {
+  1: "Economia e lavoro",
+  2: "Stato, tasse e welfare",
+  3: "Istituzioni e democrazia",
+  4: "Ambiente e sviluppo sostenibile",
+  5: "Immigrazione e identità",
+  6: "Etica, tecnologia e cultura",
+  7: "Ordine, giustizia e sicurezza",
+  8: "Innovazione sociale e futuro",
+  9: "Percezioni e fiducia nel sistema"
+};
+
+const domande = {
+  1: [
+    "Lo Stato deve intervenire per redistribuire i profitti e garantire salari equi.",
+    "Le tasse sulle grandi ricchezze dovrebbero finanziare i servizi pubblici.",
+    "Il mercato libero produce naturalmente benessere per tutti.",
+    "Le privatizzazioni migliorano l’efficienza dei servizi pubblici.",
+    "Le piccole e medie imprese e le cooperative vanno sostenute rispetto alle multinazionali.",
+    "Il lavoro precario è un prezzo inevitabile per la competitività.",
+    "L’orario di lavoro va ridotto per migliorare la qualità della vita.",
+    "Le grandi opere infrastrutturali (TAV, ponti, autostrade) sono prioritarie per la crescita.",
+    "L’economia deve essere regolata dallo Stato più che dal mercato."
+  ],
+  2: [
+    "Lo Stato deve ridurre la pressione fiscale anche se ciò comporta tagli ai servizi pubblici.",
+    "Un sistema di welfare efficiente deve garantire sanità, scuola e pensioni pubbliche.",
+    "Le tasse devono essere proporzionali al reddito e alla ricchezza.",
+    "L’evasione fiscale mina la giustizia sociale.",
+    "Il debito pubblico va ridotto anche con tagli alla spesa sociale.",
+    "Chi riceve sussidi deve essere controllato per evitare abusi.",
+    "I servizi pubblici locali (acqua, trasporti, rifiuti) dovrebbero essere gestiti da imprese private.",
+    "Le politiche fiscali dovrebbero favorire le famiglie con figli.",
+    "Il sistema fiscale deve favorire la redistribuzione della ricchezza."
+  ],
+  3: [
+    "Il Parlamento deve essere il centro della vita democratica.",
+    "La separazione dei poteri è fondamentale per la libertà dei cittadini.",
+    "I referendum dovrebbero essere usati più spesso per decisioni importanti.",
+    "Le istituzioni europee dovrebbero avere maggiore potere decisionale comune.",
+    "Il Presidente della Repubblica dovrebbe essere eletto direttamente dai cittadini.",
+    "La burocrazia frena l’efficienza del sistema pubblico.",
+    "Il numero dei parlamentari dovrebbe essere ulteriormente ridotto.",
+    "I partiti tradizionali non rappresentano più le esigenze reali dei cittadini.",
+    "Le istituzioni devono garantire partecipazione e trasparenza."
+  ],
+  4: [
+    "La tutela dell’ambiente deve prevalere sullo sviluppo economico.",
+    "Le fonti rinnovabili devono diventare prioritarie rispetto ai combustibili fossili.",
+    "Le tasse ecologiche sono utili per ridurre l’inquinamento.",
+    "L’agricoltura sostenibile e di prossimità va favorita rispetto a quella intensiva.",
+    "La transizione ecologica non deve rallentare la crescita industriale.",
+    "Le politiche ambientali devono essere coordinate a livello europeo.",
+    "Le imprese inquinanti devono pagare di più per compensare i danni ambientali.",
+    "L’educazione ambientale dovrebbe essere parte del curriculum scolastico.",
+    "L’Italia deve investire di più nella ricerca su energia pulita e riciclo."
+  ],
+  5: [
+    "L’immigrazione rappresenta un’opportunità culturale ed economica per il Paese.",
+    "Chi vive e lavora in Italia da anni dovrebbe ottenere la cittadinanza.",
+    "Le frontiere vanno controllate in modo più severo per motivi di sicurezza.",
+    "Le differenze culturali sono una ricchezza per la società.",
+    "Il numero di migranti va limitato anche a costo di sanzioni europee.",
+    "L’integrazione richiede impegno reciproco tra cittadini e nuovi arrivati.",
+    "Le radici culturali e religiose italiane vanno tutelate come identità comune.",
+    "Le politiche migratorie dovrebbero essere decise a livello europeo.",
+    "In generale, l’immigrazione deve essere gestita ma non temuta."
+  ],
+  6: [
+    "La ricerca scientifica deve essere libera da interferenze politiche o religiose.",
+    "Le nuove tecnologie possono ridurre le disuguaglianze sociali.",
+    "Le piattaforme digitali dovrebbero essere regolamentate più severamente.",
+    "Le politiche culturali devono sostenere l’accesso gratuito alla conoscenza.",
+    "Le scuole e università devono essere pubbliche e inclusive.",
+    "Le grandi aziende tecnologiche concentrano troppo potere economico.",
+    "L’intelligenza artificiale deve essere controllata da norme etiche condivise.",
+    "Le tradizioni vanno rispettate, ma non devono ostacolare l’innovazione.",
+    "La cultura e la scienza devono orientare le decisioni politiche."
+  ],
+  7: [
+    "La sicurezza dei cittadini deve prevalere su alcune libertà individuali.",
+    "Le pene devono essere più severe per ridurre la criminalità.",
+    "La giustizia dovrebbe essere più rapida, anche con meno garanzie formali.",
+    "La corruzione è un problema strutturale più della criminalità comune.",
+    "La fiducia nelle forze dell’ordine è essenziale per la coesione sociale.",
+    "Il controllo pubblico sui poteri economici è una forma di sicurezza collettiva.",
+    "La giustizia deve essere indipendente da ogni potere politico o mediatico.",
+    "La lotta alla criminalità organizzata deve essere prioritaria anche rispetto ad altri temi.",
+    "La sicurezza non è solo ordine pubblico ma anche tutela dei diritti."
+  ],
+  8: [
+    "Le innovazioni sociali sono più importanti di quelle economiche.",
+    "La scuola deve preparare i giovani al cambiamento sociale, non solo al lavoro.",
+    "Il futuro del lavoro richiede più formazione umanistica che tecnica.",
+    "Le nuove generazioni devono avere maggiore voce nelle decisioni politiche.",
+    "La solidarietà digitale (es. reti civiche online) è una risorsa da valorizzare.",
+    "L’intelligenza collettiva può sostituire forme tradizionali di rappresentanza.",
+    "L’innovazione deve sempre avere un impatto etico e sociale positivo.",
+    "Le politiche per i giovani devono essere centrali nelle scelte di governo.",
+    "La creatività è una forma di sviluppo economico e politico."
+  ],
+  9: [
+    "Ritengo che la corruzione politica sia molto diffusa in Italia.",
+    "Penso che i media influenzino eccessivamente l’opinione pubblica.",
+    "Credo che la politica possa ancora migliorare la vita delle persone.",
+    "Ho fiducia nelle istituzioni europee più che in quelle nazionali.",
+    "Ritengo che l’onestà conti più della competenza in politica.",
+    "Credo che la trasparenza sia più importante dell’efficienza amministrativa.",
+    "Ho fiducia nella giustizia italiana.",
+    "Ritengo che la società sia più onesta dei suoi rappresentanti.",
+    "Mi sento rappresentato dalle attuali forze politiche."
+  ]
+};
+
+// Genera domande dinamiche
+const container = document.getElementById("domande");
+for (let area in aree) {
+  const section = document.createElement("section");
+  const title = document.createElement("h2");
+  title.textContent = "Area " + area + " – " + aree[area];
+  section.appendChild(title);
+
+  domande[area].forEach((testo, i) => {
+    const label = document.createElement("label");
+    label.textContent = (i + 1) + ". " + testo;
+    const select = document.createElement("select");
+    select.id = `a${area}d${i+1}`;
+    const options = ["Seleziona", 1, 2, 3, 4, 5];
+    options.forEach(val => {
+      const opt = document.createElement("option");
+      opt.value = val === "Seleziona" ? "" : val;
+      opt.textContent = val;
+      select.appendChild(opt);
+    });
+    section.appendChild(label);
+    section.appendChild(select);
+  });
+
+  container.appendChild(section);
+}
+
+// Calcolo punteggio
+function calcolaRisultato() {
+  let somma = 0, conteggio = 0;
+  document.querySelectorAll("select").forEach(sel => {
+    if (sel.value) {
+      somma += parseInt(sel.value);
+      conteggio++;
+    }
+  });
+  if (conteggio === 0) {
+    alert("Compila almeno una domanda prima di calcolare il risultato!");
+    return;
+  }
+  const media = somma / conteggio;
+  let profilo = "";
+
+  if (media < 2) profilo = "Sinistra progressista";
+  else if (media < 3) profilo = "Centro-sinistra riformista";
+  else if (media < 4) profilo = "Centro liberale";
+  else profilo = "Destra conservatrice";
+
+  const risultatoDiv = document.getElementById("risultato");
+  risultatoDiv.innerHTML = `
+    <h2>Il tuo profilo politico</h2>
+    <p><b>${profilo}</b></p>
+    <p>Punteggio medio: ${media.toFixed(2)}</p>
+    <button onclick="scaricaPDF()">Scarica risultato in PDF</button>
+  `;
+}
+
+// Reset
+function resetForm() {
+  document.querySelectorAll("select").forEach(sel => sel.value = "");
+  document.getElementById("risultato").innerHTML = "";
+  window.scrollTo(0, 0);
+}
+
+// PDF export
+function scaricaPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Risultato del Questionario di Orientamento Politico", 10, 20);
+  doc.text(document.getElementById("risultato").innerText, 10, 30);
+  doc.save("profilo_politico.pdf");
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+</html>
