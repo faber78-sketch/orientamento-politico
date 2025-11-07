@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>📘 Metodi e profili - Test Orientamento Politico</title>
+  <style>
+    :root{
+      --accent: #003366;
+      --bg: #f6f8fb;
+      --card: #fff;
+      --text: #1c1c1c;
+      --muted: #586069;
+    }
+    body{
+      margin:0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+    }
+    header{
+      background:var(--accent);
+      color:#fff;
+      padding:20px;
+      text-align:center;
+    }
+    header h1{margin:0;font-size:1.4rem}
+    main{
+      max-width:1100px;
+      margin:20px auto;
+      padding:18px;
+    }
+    .card{
+      background:var(--card);
+      border-radius:10px;
+      padding:18px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom:18px;
+    }
+    h2{color:var(--accent);margin-top:0}
+    p.lead{color:var(--muted);margin:8px 0 0}
+    .table-wrap{overflow-x:auto;margin-top:12px}
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:920px;
+    }
+    th, td{
+      padding:10px 12px;
+      border:1px solid #e6eef6;
+      text-align:left;
+      vertical-align:top;
+      font-size:0.95rem;
+    }
+    th{
+      background:#eaf2fb;
+      color:var(--accent);
+      text-align:center;
+    }
+    tr:nth-child(even){background:#fbfdff}
+    .small{font-size:0.9rem;color:var(--muted)}
+    .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;align-items:center}
+    .legend div{background:#fff;border:1px solid #e6eef6;padding:8px 10px;border-radius:8px;font-size:0.9rem}
+    footer{max-width:1100px;margin:8px auto 28px;color:var(--muted);text-align:center;font-size:0.9rem}
+    @media (max-width:900px){
+      table{min-width:800px}
+    }
+    @media (max-width:700px){
+      table{min-width:680px}
+      th,td{padding:8px}
+      header h1{font-size:1.2rem}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📘 Metodi di riferimento e profili</h1>
+    <div class="small">Spiegazione sintetica dei profili e valori di riferimento per ciascuna delle 9 aree</div>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Metodologia (sintesi)</h2>
+      <p class="lead">
+        Il test aggrega 81 affermazioni in 9 aree tematiche. Per ogni area viene calcolata una media normalizzata
+        su scala 0–100 (0 = tendenza fortemente a sinistra/progressista; 100 = tendenza fortemente a destra/conservatrice).
+        I profili di riferimento sono archetipi costruiti come vettori di riferimento (valori 0..100 per ciascuna area).
+        Il profilo risultante è scelto per prossimità (distanza euclidea normalizzata) rispetto a questi archetipi.
+      </p>
+
+      <div class="legend" aria-hidden="true">
+        <div><strong>Area 1</strong> Economia e lavoro</div>
+        <div><strong>Area 2</strong> Stato, tasse e welfare</div>
+        <div><strong>Area 3</strong> Europa e politica estera</div>
+        <div><strong>Area 4</strong> Ambiente e sviluppo sostenibile</div>
+        <div><strong>Area 5</strong> Immigrazione e identità</div>
+        <div><strong>Area 6</strong> Giustizia, sicurezza e legalità</div>
+        <div><strong>Area 7</strong> Etica, tecnologia e cultura</div>
+        <div><strong>Area 8</strong> Innovazione sociale e futuro</div>
+        <div><strong>Area 9</strong> Sintesi finale (valori e percezioni)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Profili - descrizione sintetica e valori di riferimento per area</h2>
+      <div class="table-wrap">
+        <table aria-describedby="caption">
+          <caption id="caption" class="small" style="caption-side:top;text-align:left;padding-bottom:8px">
+            I numeri nelle colonne Area1…Area9 indicano il valore di riferimento dell'archetipo (0 = sinistra/progressista, 100 = destra/conservatrice).
+          </caption>
+          <thead>
+            <tr>
+              <th style="text-align:left">Profilo</th>
+              <th style="text-align:left">Descrizione sintetica</th>
+              <th>Area1</th><th>Area2</th><th>Area3</th><th>Area4</th><th>Area5</th><th>Area6</th><th>Area7</th><th>Area8</th><th>Area9</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Progressista</strong></td>
+              <td>Promuove forte intervento pubblico per uguaglianza, welfare e diritti civili; priorità a sostenibilità e inclusione.</td>
+              <td style="text-align:center">10</td><td style="text-align:center">10</td><td style="text-align:center">20</td><td style="text-align:center">10</td><td style="text-align:center">10</td><td style="text-align:center">20</td><td style="text-align:center">20</td><td style="text-align:center">10</td><td style="text-align:center">15</td>
+            </tr>
+
+            <tr>
+              <td><strong>Riformista liberale</strong></td>
+              <td>Equilibrio tra mercato e Stato; favorevole a innovazione, tutele di base e riforme graduali.</td>
+              <td style="text-align:center">30</td><td style="text-align:center">30</td><td style="text-align:center">40</td><td style="text-align:center">35</td><td style="text-align:center">40</td><td style="text-align:center">30</td><td style="text-align:center">35</td><td style="text-align:center">30</td><td style="text-align:center">30</td>
+            </tr>
+
+            <tr>
+              <td><strong>Conservatore</strong></td>
+              <td>Valorizza stabilità, ordine e tradizioni; preferisce mercato e riduzione del peso pubblico.</td>
+              <td style="text-align:center">70</td><td style="text-align:center">70</td><td style="text-align:center">60</td><td style="text-align:center">60</td><td style="text-align:center">65</td><td style="text-align:center">70</td><td style="text-align:center">65</td><td style="text-align:center">50</td><td style="text-align:center">60</td>
+            </tr>
+
+            <tr>
+              <td><strong>Sovranista / Nazional-popolare</strong></td>
+              <td>Focus su sovranità nazionale, controllo frontiere e tutela dell'identità; scettico verso integrazione sovranazionale.</td>
+              <td style="text-align:center">80</td><td style="text-align:center">80</td><td style="text-align:center">75</td><td style="text-align:center">80</td><td style="text-align:center">85</td><td style="text-align:center">80</td><td style="text-align:center">80</td><td style="text-align:center">70</td><td style="text-align:center">80</td>
+            </tr>
+
+            <tr>
+              <td><strong>Ecologista</strong></td>
+              <td>Priorità alla tutela ambientale e alla transizione verde; politiche pubbliche per sostenibilità e giustizia climatica.</td>
+              <td style="text-align:center">20</td><td style="text-align:center">30</td><td style="text-align:center">25</td><td style="text-align:center">10</td><td style="text-align:center">25</td><td style="text-align:center">30</td><td style="text-align:center">30</td><td style="text-align:center">15</td><td style="text-align:center">20</td>
+            </tr>
+
+            <tr>
+              <td><strong>Libertario</strong></td>
+              <td>Massima libertà economica e individuale, Stato minimo; favorevole a deregulation e riduzione fiscale.</td>
+              <td style="text-align:center">85</td><td style="text-align:center">80</td><td style="text-align:center">75</td><td style="text-align:center">80</td><td style="text-align:center">85</td><td style="text-align:center">75</td><td style="text-align:center">70</td><td style="text-align:center">85</td><td style="text-align:center">80</td>
+            </tr>
+
+            <tr>
+              <td><strong>Comunitario / Sociale</strong></td>
+              <td>Valorizza cooperazione locale, mutualismo e welfare di prossimità; attenzione al tessuto produttivo locale.</td>
+              <td style="text-align:center">25</td><td style="text-align:center">25</td><td style="text-align:center">30</td><td style="text-align:center">30</td><td style="text-align:center">25</td><td style="text-align:center">35</td><td style="text-align:center">30</td><td style="text-align:center">25</td><td style="text-align:center">25</td>
+            </tr>
+
+            <tr>
+              <td><strong>Tecnocratico / Pragmatico</strong></td>
+              <td>Fiducia nella competenza, nella scienza e nelle riforme basate sui dati; orientamento pragmatico e manageriale.</td>
+              <td style="text-align:center">45</td><td style="text-align:center">40</td><td style="text-align:center">50</td><td style="text-align:center">40</td><td style="text-align:center">40</td><td style="text-align:center">45</td><td style="text-align:center">45</td><td style="text-align:center">40</td><td style="text-align:center">45</td>
+            </tr>
+
+            <tr>
+              <td><strong>Populista</strong></td>
+              <td>Sfiducia nelle élite e forte richiamo alla sovranità popolare; politiche dirette, spesso contrapposte agli apparati consolidati.</td>
+              <td style="text-align:center">60</td><td style="text-align:center">60</td><td style="text-align:center">65</td><td style="text-align:center">55</td><td style="text-align:center">70</td><td style="text-align:center">60</td><td style="text-align:center">60</td><td style="text-align:center">55</td><td style="text-align:center">60</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <p class="small" style="margin-top:12px">
+        Nota: i valori sono archetipici e servono come riferimento di prossimità per la classificazione del profilo del partecipante.
+        L'algoritmo confronta la posizione del rispondente (vettore di 9 aree) con questi vettori e determina il profilo "corrispondente" e il
+        "più affine" in base alla distanza normalizzata.
+      </p>
+    </div>
+
+  </main>
+
+  <footer>
+    <div>© 2025 - Test di Orientamento Politico — Metodi e profili</div>
+    <div style="margin-top:6px"><a href="index.html" style="color:var(--accent);text-decoration:none">← Torna al test</a></div>
+  </footer>
+</body>
+</html>
