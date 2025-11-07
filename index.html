@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Test di Orientamento Politico — completo</title>
+<style>
+  :root{
+    --accent:#003366;
+    --bg:#f6f8fb;
+    --card:#fff;
+    --text:#1c1c1c;
+  }
+  body{
+    margin:0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+  header{background:var(--accent);color:#fff;padding:18px;text-align:center}
+  header h1{margin:0;font-size:1.4rem}
+  main{max-width:1100px;margin:18px auto;padding:18px}
+  .intro{background:#eef4fb;border-left:6px solid var(--accent);padding:12px;border-radius:8px;margin-bottom:14px}
+  .area{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:14px}
+  .area h2{color:var(--accent);margin:0 0 8px 0;font-size:1rem}
+  .q{display:flex;flex-wrap:wrap;align-items:center;padding:8px 0;border-top:1px solid #f0f3f6}
+  .q:first-of-type{border-top:0}
+  .q p{flex:1 1 65%;margin:0;padding-right:8px}
+  .q .sel{flex:0 0 32%;text-align:right}
+  select{padding:8px;border-radius:6px;border:1px solid #ccd6df;background:#fff}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+  button{background:var(--accent);color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer}
+  button.alt{background:#fff;color:var(--accent);border:1px solid #d7e4f0}
+  #result{display:none;margin-top:16px;padding:14px;border-radius:8px;background:#f0f7ff;border-left:6px solid var(--accent)}
+  .profileTitle{font-weight:700;color:var(--accent);margin:0 0 8px 0}
+  .profileDesc{margin:6px 0}
+  footer{margin-top:18px;text-align:center;color:#666;font-size:0.9rem;padding-bottom:20px}
+  @media (max-width:800px){
+    .q p{flex-basis:100%;margin-bottom:8px}
+    .q .sel{flex-basis:100%;text-align:left}
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>🧭 Test di Orientamento Politico — versione completa</h1>
+  </header>
+
+  <main>
+    <div class="intro">
+      <strong>Introduzione</strong>
+      <p style="margin:.4rem 0 0">
+        Questo test è stato progettato per aiutarti a comprendere il tuo orientamento politico complessivo
+        in modo scientifico e imparziale. Non è un sondaggio elettorale: misura valori e priorità su 9 aree tematiche.
+        Rispondi sinceramente; il risultato fornirà il profilo corrispondente e il profilo più affine (con spiegazione testuale).
+      </p>
+      <p style="margin:.4rem 0 0;font-size:.9rem;color:#444">Durata stimata: 6–10 minuti — 81 affermazioni (9 aree × 9 affermazioni).</p>
+    </div>
+
+    <div id="form"></div>
+
+    <div class="controls">
+      <button id="calc">Calcola risultato</button>
+      <button id="save" class="alt">Salva locale</button>
+      <button id="load" class="alt">Carica salvataggio</button>
+      <button id="reset" class="alt">Reset</button>
+      <a href="metodi.html" style="margin-left:auto;align-self:center;text-decoration:none;color:var(--accent)">📘 Metodi di riferimento e profili politici</a>
+    </div>
+
+    <div id="result" aria-live="polite"></div>
+
+  </main>
+
+  <footer>© 2025 — Test orientamento politico • Uso didattico e informativo</footer>
+
+<script>
+/* ====== Domande (81) — ogni elemento: {id, text, dir} dir: "L" (accordo -> left), "R" (accordo -> right), "N" neutral ====== */
+
+/* We use the final wordings agreed in the conversation. */
+const areas = [
+  { id:1, title:"AREA 1 — ECONOMIA E LAVORO", qs:[
+    {id:"1_1", text:"Lo Stato deve intervenire attivamente per ridistribuire la ricchezza e ridurre le disuguaglianze sociali.", dir:"L"},
+    {id:"1_2", text:"Le tasse sui grandi patrimoni e sui profitti aziendali dovrebbero essere aumentate per finanziare servizi pubblici e welfare.", dir:"L"},
+    {id:"1_3", text:"Le privatizzazioni di settori come autostrade, ferrovie o servizi pubblici hanno migliorato l’efficienza economica del Paese.", dir:"R"},
+    {id:"1_4", text:"Un salario minimo legale è necessario per garantire una retribuzione dignitosa a tutti i lavoratori.", dir:"L"},
+    {id:"1_5", text:"Le imprese dovrebbero avere meno vincoli sindacali e normativi per poter essere competitive a livello internazionale.", dir:"R"},
+    {id:"1_6", text:"Le cooperative, le piccole e medie imprese e le imprese sociali dovrebbero essere favorite rispetto ai grandi gruppi industriali.", dir:"L"},
+    {id:"1_7", text:"Gli incentivi alle aziende dovrebbero essere concessi solo se mantengono livelli stabili di occupazione.", dir:"L"},
+    {id:"1_8", text:"Il mercato, e non lo Stato, deve determinare salari, prezzi e condizioni di lavoro.", dir:"R"},
+    {id:"1_9", text:"In generale, lo Stato dovrebbe avere un ruolo guida nell’economia nazionale, orientando investimenti e politiche industriali.", dir:"L"}
+  ]},
+  { id:2, title:"AREA 2 — STATO, TASSE E WELFARE", qs:[
+    {id:"2_1", text:"Lo Stato deve garantire sanità e istruzione gratuite e di alta qualità per tutti.", dir:"L"},
+    {id:"2_2", text:"Chi guadagna di più dovrebbe contribuire con tasse proporzionalmente più alte.", dir:"L"},
+    {id:"2_3", text:"Gli aiuti pubblici come il reddito di cittadinanza o i sussidi di disoccupazione rischiano di creare dipendenza e ridurre la voglia di lavorare.", dir:"R"},
+    {id:"2_4", text:"È giusto ridurre le tasse anche se ciò comporta tagli ai servizi pubblici come sanità, scuola o trasporti.", dir:"R"},
+    {id:"2_5", text:"Misure come il reddito di cittadinanza sono strumenti efficaci per ridurre la povertà e garantire una rete di protezione sociale.", dir:"L"},
+    {id:"2_6", text:"I servizi pubblici dovrebbero essere gestiti da aziende private sotto controllo statale.", dir:"R"},
+    {id:"2_7", text:"La spesa pubblica per la difesa dovrebbe aumentare.", dir:"R"},
+    {id:"2_8", text:"La burocrazia è un ostacolo maggiore rispetto alla mancanza di fondi.", dir:"R"},
+    {id:"2_9", text:"In generale, lo Stato deve essere efficiente ma presente, capace di garantire equità senza frenare l’iniziativa privata.", dir:"N"}
+  ]},
+  { id:3, title:"AREA 3 — EUROPA E POLITICA ESTERA", qs:[
+    {id:"3_1", text:"L’Italia dovrebbe avere un ruolo più integrato e collaborativo nell’Unione Europea.", dir:"L"},
+    {id:"3_2", text:"L’Italia dovrebbe difendere la propria autonomia nelle decisioni europee, anche a costo di conflitti con Bruxelles.", dir:"R"},
+    {id:"3_3", text:"L’Italia dovrebbe ridurre la propria dipendenza dalla NATO e puntare su una difesa europea autonoma.", dir:"L"},
+    {id:"3_4", text:"L’Italia dovrebbe mantenere un forte legame politico, militare ed economico con gli Stati Uniti.", dir:"R"},
+    {id:"3_5", text:"Le sanzioni economiche verso paesi autoritari sono uno strumento giusto ed efficace per difendere i diritti umani e la democrazia.", dir:"L"},
+    {id:"3_6", text:"L’Italia dovrebbe continuare a commerciare con paesi autoritari se ciò porta benefici economici rilevanti.", dir:"R"},
+    {id:"3_7", text:"L’Unione Europea dovrebbe creare una forza di difesa comune.", dir:"L"},
+    {id:"3_8", text:"L’Italia dovrebbe adottare politiche più restrittive sull’immigrazione da paesi extra-UE.", dir:"R"},
+    {id:"3_9", text:"In politica estera e di difesa, l’Italia dovrebbe contare principalmente sulle istituzioni europee piuttosto che su decisioni nazionali autonome.", dir:"L"}
+  ]},
+  { id:4, title:"AREA 4 — AMBIENTE E SVILUPPO SOSTENIBILE", qs:[
+    {id:"4_1", text:"Le politiche ambientali devono restare una priorità anche se comportano minore crescita economica.", dir:"L"},
+    {id:"4_2", text:"L’energia nucleare rappresenta una soluzione sostenibile e realistica per ridurre le emissioni.", dir:"R"},
+    {id:"4_3", text:"Le imprese più inquinanti dovrebbero pagare tasse ambientali più alte.", dir:"L"},
+    {id:"4_4", text:"Lo Stato deve investire nelle energie rinnovabili e nella riconversione ecologica delle industrie.", dir:"L"},
+    {id:"4_5", text:"Gli agricoltori dovrebbero ricevere sostegni economici per adottare pratiche più sostenibili.", dir:"L"},
+    {id:"4_6", text:"L’ambiente è spesso usato come pretesto per introdurre nuove tasse e limitazioni burocratiche.", dir:"R"},
+    {id:"4_7", text:"I trasporti pubblici dovrebbero essere potenziati anche se ciò limita l'uso dell'auto privata.", dir:"L"},
+    {id:"4_8", text:"Le grandi opere infrastrutturali dovrebbero essere realizzate più rapidamente, anche se comportano impatto ambientale.", dir:"R"},
+    {id:"4_9", text:"In generale, lo sviluppo economico dovrebbe prevalere sulla tutela ambientale quando i due obiettivi sono in conflitto.", dir:"R"}
+  ]},
+  { id:5, title:"AREA 5 — IMMIGRAZIONE E IDENTITÀ", qs:[
+    {id:"5_1", text:"L’immigrazione è una risorsa economica e culturale per l’Italia.", dir:"L"},
+    {id:"5_2", text:"L’Italia deve accogliere solo chi ha effettivo diritto all’asilo secondo le convenzioni internazionali.", dir:"R"},
+    {id:"5_3", text:"Chi nasce in Italia da genitori stranieri regolari dovrebbe ottenere automaticamente la cittadinanza (ius soli).", dir:"L"},
+    {id:"5_4", text:"Gli stranieri devono integrarsi rispettando la nostra cultura, le leggi e i valori fondamentali italiani.", dir:"R"},
+    {id:"5_5", text:"L’Italia dovrebbe accogliere anche chi fugge da povertà o instabilità politica, non solo chi ha diritto d’asilo.", dir:"L"},
+    {id:"5_6", text:"La presenza di immigrati aumenta il senso di insicurezza nella società.", dir:"R"},
+    {id:"5_7", text:"L’Italia deve contribuire a un sistema europeo di redistribuzione dei migranti.", dir:"L"},
+    {id:"5_8", text:"L’identità italiana è messa a rischio dalla diffusione della cucina etnica, del sushi o del kebab e dalla globalizzazione culturale.", dir:"R"},
+    {id:"5_9", text:"In un Paese come l’Italia, le politiche sull’immigrazione dovrebbero concentrarsi più sulla difesa dell’identità nazionale che sull’inclusione culturale.", dir:"R"}
+  ]},
+  { id:6, title:"AREA 6 — GIUSTIZIA, SICUREZZA E LEGALITÀ", qs:[
+    {id:"6_1", text:"Le pene per reati gravi dovrebbero essere più severe e scontate interamente.", dir:"R"},
+    {id:"6_2", text:"La certezza della pena è più importante della rieducazione del detenuto.", dir:"R"},
+    {id:"6_3", text:"Le leggi dello Stato dovrebbero ispirarsi ai valori religiosi o morali condivisi dalla maggioranza.", dir:"R"},
+    {id:"6_4", text:"Lo Stato dovrebbe investire di più nella prevenzione sociale (scuola, lavoro, inclusione) piuttosto che nel carcere.", dir:"L"},
+    {id:"6_5", text:"Le forze dell’ordine dovrebbero avere maggiori poteri operativi anche a costo di ridurre alcune garanzie.", dir:"R"},
+    {id:"6_6", text:"La giustizia dovrebbe essere più rapida, anche se questo comporta meno gradi di giudizio.", dir:"R"},
+    {id:"6_7", text:"Chi commette reati economici (corruzione, frode, riciclaggio) dovrebbe ricevere pene severe equivalenti ai reati comuni.", dir:"L"},
+    {id:"6_8", text:"I magistrati dovrebbero essere più controllati dal potere politico per evitare abusi.", dir:"R"},
+    {id:"6_9", text:"In generale, nella giustizia italiana serve più ordine e controllo, anche se ciò riduce un po' la libertà individuale.", dir:"R"}
+  ]},
+  { id:7, title:"AREA 7 — ETICA, TECNOLOGIA E CULTURA", qs:[
+    {id:"7_1", text:"L’intelligenza artificiale e le nuove tecnologie devono essere regolate dallo Stato per evitare abusi.", dir:"L"},
+    {id:"7_2", text:"La religione cattolica dovrebbe avere un ruolo di riferimento nella cultura italiana e nella scuola pubblica.", dir:"R"},
+    {id:"7_3", text:"Le fake news e la disinformazione online dovrebbero essere sanzionate, anche se ciò comporta un maggiore controllo sui social network.", dir:"L"},
+    {id:"7_4", text:"L’arte, la musica e la cultura dovrebbero ricevere più fondi pubblici.", dir:"L"},
+    {id:"7_5", text:"La libertà di espressione deve essere tutelata anche quando si tratta di opinioni estreme o offensive, purché non incitino alla violenza.", dir:"R"},
+    {id:"7_6", text:"Le piattaforme digitali straniere dovrebbero pagare più tasse in Italia per contribuire ai servizi pubblici.", dir:"L"},
+    {id:"7_7", text:"Le tradizioni locali e religiose vanno tutelate contro l’omologazione globale.", dir:"R"},
+    {id:"7_8", text:"La scienza deve prevalere su ogni credo religioso nelle decisioni pubbliche.", dir:"L"},
+    {id:"7_9", text:"In generale, la cultura e la tecnologia dovrebbero essere usate per migliorare la società, anche se ciò richiede regole più rigide.", dir:"L"}
+  ]},
+  { id:8, title:"AREA 8 — INNOVAZIONE SOCIALE E FUTURO", qs:[
+    {id:"8_1", text:"Il reddito di base universale è una buona soluzione per il futuro del lavoro.", dir:"L"},
+    {id:"8_2", text:"Le aziende che sostituiscono lavoratori con robot dovrebbero contribuire economicamente con una tassa sull’automazione.", dir:"L"},
+    {id:"8_3", text:"Le università dovrebbero essere gratuite per gli studenti meritevoli ma con criteri severi di valutazione.", dir:"N"},
+    {id:"8_4", text:"Le start-up e le imprese innovative dovrebbero ricevere più incentivi pubblici.", dir:"L"},
+    {id:"8_5", text:"Il lavoro da remoto dovrebbe essere favorito anche nel settore pubblico.", dir:"L"},
+    {id:"8_6", text:"L’intelligenza artificiale dovrebbe essere usata soprattutto per migliorare i servizi pubblici.", dir:"L"},
+    {id:"8_7", text:"Le aziende dovrebbero pubblicare regolarmente l’impatto ambientale e sociale delle proprie attività.", dir:"L"},
+    {id:"8_8", text:"Le politiche per i giovani e la formazione dovrebbero avere priorità rispetto ad altri incentivi.", dir:"L"},
+    {id:"8_9", text:"In generale, il progresso tecnologico e sociale deve essere guidato dallo Stato per garantire equità.", dir:"L"}
+  ]},
+  { id:9, title:"AREA 9 — SINTESI FINALE (valori e percezioni)", qs:[
+    {id:"9_1", text:"Mi riconosco in politiche che mettono al centro l’uguaglianza sociale, anche a costo di ridurre i profitti privati.", dir:"L"},
+    {id:"9_2", text:"La libertà individuale e la riduzione del peso dello Stato sono più importanti dell’intervento pubblico nell’economia.", dir:"R"},
+    {id:"9_3", text:"La cultura nazionale e le tradizioni devono essere difese anche a costo di limitare l’influenza esterna.", dir:"R"},
+    {id:"9_4", text:"Le trasformazioni tecnologiche e sociali vanno regolate per proteggere i più deboli e garantire coesione.", dir:"L"},
+    {id:"9_5", text:"Le differenze di genere, etnia o orientamento sessuale devono essere tutelate con leggi specifiche.", dir:"L"},
+    {id:"9_6", text:"La sicurezza e l’ordine pubblico vengono prima delle libertà individuali.", dir:"R"},
+    {id:"9_7", text:"Le tasse sono un dovere civile necessario a mantenere servizi pubblici efficienti e accessibili.", dir:"L"},
+    {id:"9_8", text:"Lo Stato deve ridurre la spesa pubblica e promuovere la responsabilità individuale.", dir:"R"},
+    {id:"9_9", text:"Nel complesso, credo che il progresso del Paese debba essere guidato più dal mercato che dallo Stato.", dir:"R"}
+  ]}
+];
+
+/* ===== render form ===== */
+const form = document.getElementById('form');
+areas.forEach(area=>{
+  const ad = document.createElement('div'); ad.className='area';
+  const h = document.createElement('h2'); h.textContent = area.title; ad.appendChild(h);
+  area.qs.forEach((q, idx)=>{
+    const qdiv = document.createElement('div'); qdiv.className='q';
+    const p = document.createElement('p'); p.innerHTML = `<strong>${idx+1}.</strong> ${q.text}`;
+    const selWrap = document.createElement('div'); selWrap.className='sel';
+    const sel = document.createElement('select'); sel.name=q.id;
+    const opt0 = document.createElement('option'); opt0.value=''; opt0.textContent='Seleziona'; sel.appendChild(opt0);
+    for(let v=1; v<=5; v++){ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); }
+    selWrap.appendChild(sel);
+    qdiv.appendChild(p); qdiv.appendChild(selWrap);
+    ad.appendChild(qdiv);
+  });
+  form.appendChild(ad);
+});
+
+/* ===== helper functions ===== */
+function readAnswers(){
+  const out = {};
+  areas.forEach(a=>{
+    a.qs.forEach(q=>{
+      const v = document.querySelector(`[name="${q.id}"]`)?.value;
+      out[q.id] = v ? Number(v) : null;
+    });
+  });
+  return out;
+}
+function invertIfNeeded(v, dir){
+  if(v===null) return null;
+  if(dir==='L') return 6 - v;
+  return v; // R or N unchanged
+}
+
+/* ===== profile archetypes (vectors per area 1..9 normalized 0..100) =====
+  These are approximate archetypes for similarity matching.
+*/
+const archetypes = [
+  {key:'Progressista', desc: `Credi in una società in cui lo Stato garantisce uguaglianza, welfare, diritti civili e transizione ecologica.`, vec:[10,10,20,10,10,20,20,10,15]},
+  {key:'Riformista liberale', desc:`Equilibrio tra mercato e Stato: innovazione, tutele sociali e riforme graduali.`, vec:[30,30,40,35,40,30,35,30,30]},
+  {key:'Conservatore', desc:`Valorizza stabilità, tradizione, ordine e responsabilità individuale; ruolo limitato dello Stato in economia.`, vec:[70,70,60,60,65,70,65,50,60]},
+  {key:'Sovranista', desc:`Priorità a sovranità nazionale, identità e protezione economica; scetticismo verso integrazione sovranazionale.`, vec:[80,80,75,80,85,80,80,70,80]},
+  {key:'Ecologista', desc:`Priorità alla tutela ambientale, economia circolare e politiche verdi con forte intervento pubblico.`, vec:[20,30,25,10,25,30,30,15,20]},
+  {key:'Libertario', desc:`Massima libertà individuale ed economica, riduzione drastica del ruolo dello Stato.`, vec:[85,80,75,80,85,75,70,85,80]},
+  {key:'Comunitario', desc:`Valorizza economia sociale, cooperazione locale, mutualismo e politiche di prossimità.`, vec:[25,25,30,30,25,35,30,25,25]},
+  {key:'Tecnocratico', desc:`Fiducia nella scienza, competenza e gestione efficiente dello Stato; riforme pragmatiche e merito.`, vec:[45,40,50,40,40,45,45,40,45]},
+  {key:'Populista', desc:`Sfiducia nelle élite, sovranità popolare, politiche dirette e forte retorica contro i poteri consolidati.`, vec:[60,60,65,55,70,60,60,55,60]}
+];
+
+/* normalize archetype vectors to 0..100 (they already are 0..100) */
+/* compute area averages and distances */
+function computeScores(){
+  const answers = readAnswers();
+  // compute per-area avg raw (1..5 scaled to right meaning by inversion)
+  const areaScores = areas.map(area=>{
+    let sum=0, cnt=0;
+    area.qs.forEach(q=>{
+      const v = answers[q.id];
+      if(v !== null){
+        const s = invertIfNeeded(v, q.dir); // 1..5 where high => more right
+        sum += s; cnt++;
+      }
+    });
+    if(cnt===0) return {avgRaw:null, norm:null, answered:0};
+    const avgRaw = sum/cnt; // 1..5
+    const norm = Math.round(((avgRaw - 1)/4)*100); // 0..100 -> 0=left,100=right
+    return {avgRaw, norm, answered:cnt};
+  });
+
+  // build vector array (norms) for archetype compare
+  const vec = areaScores.map(a => (a.norm===null? null : a.norm));
+  return {areaScores, vec, answers};
+}
+
+/* Euclidean distance, skipping nulls by averaging remaining dims */
+function distanceVec(a, b){
+  let sum=0, cnt=0;
+  for(let i=0;i<a.length;i++){
+    if(a[i]===null || b[i]===null) continue;
+    const d = a[i]-b[i]; sum += d*d; cnt++;
+  }
+  if(cnt===0) return Infinity;
+  return Math.sqrt(sum/cnt);
+}
+
+/* prepare archetype vectors as same length as areas (9) */
+const archeVectors = archetypes.map(a => a.vec);
+
+/* ===== UI actions ===== */
+document.getElementById('calc').addEventListener('click', (e)=>{
+  e.preventDefault();
+  const {areaScores, vec, answers} = computeScores();
+  // require at least one answered question overall
+  const totalAnswered = areaScores.reduce((s,a)=>s+a.answered,0);
+  if(totalAnswered===0){ alert('Rispondi ad almeno una domanda per calcolare il profilo.'); return; }
+
+  // Build area vector: if some areas unanswered (norm null), keep null
+  const areaVec = vec;
+  // compute distances
+  const dists = archeVectors.map((av, idx)=>{
+    return {idx, dist: distanceVec(areaVec, av)};
+  }).sort((a,b)=>a.dist - b.dist);
+
+  const bestIdx = dists[0].idx;
+  const secondIdx = dists[1] ? dists[1].idx : null;
+
+  // corresponding profile = best match
+  const primary = archetypes[bestIdx];
+  const secondary = secondIdx !== null ? archetypes[secondIdx] : null;
+
+  // Build narrative that touches all 9 areas using areaScores norms
+  // We'll craft text by describing general tendencies: for each area, classify as Left/Center/Right based on norm thresholds
+  function labelFromNorm(n){
+    if(n===null) return null;
+    if(n <= 33) return 'sinistra/progressista';
+    if(n <= 66) return 'centro';
+    return 'destra/conservatrice';
+  }
+  const areaLabels = areaScores.map((a,i)=> ({area: areas[i].title, norm: a.norm, label: labelFromNorm(a.norm)}));
+
+  // Compose narrative: we show high-level for each area (without numbers)
+  let narrative = '';
+  areaLabels.forEach(al=>{
+    if(al.norm===null) {
+      narrative += `<li><strong>${al.area}</strong>: non valutata.</li>`;
+    } else {
+      narrative += `<li><strong>${al.area}</strong>: tendenza ${al.label}.</li>`;
+    }
+  });
+
+  // show result block
+  const resDiv = document.getElementById('result');
+  resDiv.style.display = 'block';
+  resDiv.innerHTML = `
+    <h3 class="profileTitle">Profilo corrispondente: ${primary.key}</h3>
+    <p class="profileDesc">${primary.desc}</p>
+    <h4 style="margin-top:10px">Profilo più affine: ${secondary ? secondary.key : '—'}</h4>
+    <p style="margin:6px 0">${secondary ? secondary.desc : ''}</p>
+    <h4 style="margin-top:10px">Come si traducono le tue risposte per area</h4>
+    <ul style="margin:6px 0 0 1.1rem">${narrative}</ul>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button id="dlPDF">Scarica risultato (PDF)</button>
+      <button id="share">Genera link di condivisione</button>
+    </div>
+  `;
+
+  // add PDF and share handlers
+  document.getElementById('dlPDF').addEventListener('click', async ()=>{
+    // lightweight PDF: generate simple text
+    if(typeof window.jspdf === 'undefined'){
+      await new Promise((ok,fail)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload=ok; s.onerror=fail;
+        document.head.appendChild(s);
+      }).catch(()=>{ alert('Impossibile caricare libreria PDF'); return; });
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(12);
+    doc.text('Risultato Test Orientamento Politico', 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Profilo corrispondente: ${primary.key}`, 14, 30);
+    doc.text(primary.desc, 14, 36, {maxWidth:180});
+    if(secondary){ doc.text(`Profilo più affine: ${secondary.key}`, 14, 70); doc.text(secondary.desc, 14, 76, {maxWidth:180}); }
+    doc.save('profilo_politico.pdf');
+  });
+
+  document.getElementById('share').addEventListener('click', ()=>{
+    // encode answers in base64 and put it in hash
+    const payload = {v:1,t:Date.now(),a:answers};
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    const url = `${location.origin}${location.pathname}#r=${b64}`;
+    navigator.clipboard?.writeText(url).then(()=> alert('Link copiato negli appunti.')) .catch(()=> prompt('Copia questo link:', url));
+  });
+});
+
+/* ===== Save/load/reset ===== */
+document.getElementById('save').addEventListener('click',(e)=>{ e.preventDefault();
+  const a = readAnswers(); localStorage.setItem('qp2025', JSON.stringify(a)); alert('Risposte salvate localmente.');});
+document.getElementById('load').addEventListener('click',(e)=>{ e.preventDefault();
+  const raw = localStorage.getItem('qp2025'); if(!raw){ alert('Nessun salvataggio trovato.'); return;}
+  try{ const obj = JSON.parse(raw); Object.keys(obj).forEach(k=>{ const el=document.querySelector(`[name="${k}"]`); if(el) el.value = obj[k]===null ? '' : obj[k]; }); alert('Risposte caricate.'); }catch(e){alert('Errore caricamento');}
+});
+document.getElementById('reset').addEventListener('click',(e)=>{ e.preventDefault(); if(!confirm('Resettare tutte le risposte?')) return; document.querySelectorAll('select').forEach(s=>s.value=''); document.getElementById('result').style.display='none'; });
+
+/* ===== load from hash (share) if present ===== */
+function decodeBase64Url(str){
+  str = str.replace(/-/g,'+').replace(/_/g,'/');
+  while(str.length %4) str += '=';
+  try{ return JSON.parse(decodeURIComponent(escape(atob(str)))); }catch(e){return null;}
+}
+window.addEventListener('load', ()=>{
+  const h = location.hash || '';
+  if(h.startsWith('#r=')){
+    const b64 = h.slice(3);
+    const obj = decodeBase64Url(b64);
+    if(obj && obj.a){
+      Object.keys(obj.a).forEach(k=>{
+        const el = document.querySelector(`[name="${k}"]`);
+        if(el) el.value = obj.a[k]===null ? '' : obj.a[k];
+      });
+      document.getElementById('calc').click();
+    }
+  }
+});
+</script>
+</body>
+</html>
