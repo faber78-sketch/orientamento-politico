@@ -1,3 +1,11 @@
+<script>
+// Protezione semplice: impedisce accesso diretto via URL
+const allowAccess = sessionStorage.getItem("accessGranted");
+if (!allowAccess) {
+  document.body.innerHTML = "<h2 style='text-align:center;margin-top:100px;'>⛔ Accesso non autorizzato</h2>";
+  throw new Error("Accesso non autorizzato");
+}
+</script>
 <!DOCTYPE html>
 <html lang="it">
 <head>
