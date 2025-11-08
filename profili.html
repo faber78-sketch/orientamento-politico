@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>📘 Profili - Test di Orientamento Politico</title>
+  <style>
+    :root{ --accent:#003366; --bg:#f6f8fb; --card:#fff; --text:#1c1c1c; --muted:#5b6b7a; }
+    body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    header{background:var(--accent);color:#fff;padding:18px;text-align:center}
+    header h1{margin:0;font-size:1.4rem}
+    main{max-width:1100px;margin:18px auto;padding:18px}
+    .card{background:var(--card);padding:18px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:18px}
+    h2{color:var(--accent);margin-top:0}
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;min-width:900px}
+    th,td{padding:10px;border:1px solid #e6eef6;text-align:left;vertical-align:top}
+    th{background:#eaf2fb;color:var(--accent);text-align:center}
+    tr:nth-child(even){background:#fbfdff}
+    .small{font-size:0.9rem;color:var(--muted)}
+    footer{text-align:center;color:var(--muted);margin-top:12px;padding-bottom:20px}
+    @media (max-width:700px){ table{min-width:700px} header h1{font-size:1.2rem} }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📘 Profili di riferimento</h1>
+    <div class="small">Descrizioni estese e valori di riferimento per ciascun profilo (aree 1..9)</div>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Legenda aree</h2>
+      <p class="small">Area1=Economia e lavoro • Area2=Stato, tasse e welfare • Area3=Europa e politica estera • Area4=Ambiente • Area5=Immigrazione e identità • Area6=Giustizia e sicurezza • Area7=Etica, tecnologia e cultura • Area8=Innovazione sociale e futuro • Area9=Etica e responsabilità pubblica</p>
+    </div>
+
+    <div class="card">
+      <h2>Profili (descrizione + vettore 0..100 per aree 1..9)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:left">Profilo</th>
+              <th style="text-align:left">Descrizione estesa</th>
+              <th>Area1</th><th>Area2</th><th>Area3</th><th>Area4</th><th>Area5</th><th>Area6</th><th>Area7</th><th>Area8</th><th>Area9</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Progressista</strong></td>
+              <td>Credi in una società in cui lo Stato svolge un ruolo centrale per garantire uguaglianza, diritti e solidarietà. Sostieni politiche redistributive, welfare forte, tutela del lavoro, cooperazione internazionale e sviluppo sostenibile. L’etica pubblica e la trasparenza sono valori fondamentali.</td>
+              <td style="text-align:center">10</td><td style="text-align:center">10</td><td style="text-align:center">20</td><td style="text-align:center">10</td><td style="text-align:center">10</td><td style="text-align:center">20</td><td style="text-align:center">20</td><td style="text-align:center">10</td><td style="text-align:center">15</td>
+            </tr>
+
+            <tr>
+              <td><strong>Riformista / Liberale</strong></td>
+              <td>Equilibrio tra mercato e Stato: favorisce innovazione, concorrenza, ma garantisce protezioni sociali minimali. Valorizza diritti civili, libertà individuale e cooperazione europea.</td>
+              <td style="text-align:center">30</td><td style="text-align:center">30</td><td style="text-align:center">40</td><td style="text-align:center">35</td><td style="text-align:center">40</td><td style="text-align:center">30</td><td style="text-align:center">35</td><td style="text-align:center">30</td><td style="text-align:center">30</td>
+            </tr>
+
+            <tr>
+              <td><strong>Conservatore</strong></td>
+              <td>Valorizza ordine, stabilità, tradizione e responsabilità individuale; privilegia mercato e riduzione del peso pubblico, con attenzione a famiglia e cultura nazionale.</td>
+              <td style="text-align:center">70</td><td style="text-align:center">70</td><td style="text-align:center">60</td><td style="text-align:center">60</td><td style="text-align:center">65</td><td style="text-align:center">70</td><td style="text-align:center">65</td><td style="text-align:center">50</td><td style="text-align:center">60</td>
+            </tr>
+
+            <tr>
+              <td><strong>Sovranista</strong></td>
+              <td>Priorità alla sovranità nazionale, controllo delle frontiere e tutela delle produzioni locali. Scettico verso istituzioni sovranazionali e globalizzazione. Forte enfasi su identità e sicurezza.</td>
+              <td style="text-align:center">80</td><td style="text-align:center">80</td><td style="text-align:center">75</td><td style="text-align:center">80</td><td style="text-align:center">85</td><td style="text-align:center">80</td><td style="text-align:center">80</td><td style="text-align:center">70</td><td style="text-align:center">80</td>
+            </tr>
+
+            <tr>
+              <td><strong>Ecologista</strong></td>
+              <td>La tutela ambientale è primaria: sostiene transizione energetica, economia circolare, politiche di lungo periodo e investimenti pubblici per la sostenibilità.</td>
+              <td style="text-align:center">20</td><td style="text-align:center">30</td><td style="text-align:center">25</td><td style="text-align:center">10</td><td style="text-align:center">25</td><td style="text-align:center">30</td><td style="text-align:center">30</td><td style="text-align:center">15</td><td style="text-align:center">20</td>
+            </tr>
+
+            <tr>
+              <td><strong>Libertario</strong></td>
+              <td>Massima libertà economica e personale; minima ingerenza statale; riduzione fiscale e deregulation come principi chiave.</td>
+              <td style="text-align:center">85</td><td style="text-align:center">80</td><td style="text-align:center">75</td><td style="text-align:center">80</td><td style="text-align:center">85</td><td style="text-align:center">75</td><td style="text-align:center">70</td><td style="text-align:center">85</td><td style="text-align:center">80</td>
+            </tr>
+
+            <tr>
+              <td><strong>Comunitario</strong></td>
+              <td>Valorizza mutualismo, tessuto sociale locale e politiche di prossimità; sostiene cooperative e imprese locali, welfare di comunità e partecipazione civica.</td>
+              <td style="text-align:center">25</td><td style="text-align:center">25</td><td style="text-align:center">30</td><td style="text-align:center">30</td><td style="text-align:center">25</td><td style="text-align:center">35</td><td style="text-align:center">30</td><td style="text-align:center">25</td><td style="text-align:center">25</td>
+            </tr>
+
+            <tr>
+              <td><strong>Tecnocratico</strong></td>
+              <td>Fiducia nella competenza, nell’evidenza e nelle riforme basate sui dati. Sostiene governance efficiente, meritocrazia e politiche pragmatiche per innovazione e semplificazione.</td>
+              <td style="text-align:center">45</td><td style="text-align:center">40</td><td style="text-align:center">50</td><td style="text-align:center">40</td><td style="text-align:center">40</td><td style="text-align:center">45</td><td style="text-align:center">45</td><td style="text-align:center">40</td><td style="text-align:center">45</td>
+            </tr>
+
+            <tr>
+              <td><strong>Populista</strong></td>
+              <td>Sfiducia nelle élite; centralità del potere popolare e della trasparenza. Richieste di maggiore democrazia diretta, controllo dei poteri e politiche in difesa del "popolo".</td>
+              <td style="text-align:center">60</td><td style="text-align:center">60</td><td style="text-align:center">65</td><td style="text-align:center">55</td><td style="text-align:center">70</td><td style="text-align:center">60</td><td style="text-align:center">60</td><td style="text-align:center">55</td><td style="text-align:center">60</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <p class="small" style="margin-top:12px">
+        Nota: i vettori sono archetipici (0 = tendenza fortemente progressista/sinistra; 100 = tendenza fortemente conservatrice/destra).
+        L'algoritmo del test confronta il vettore areale del rispondente con questi archetipi per determinare il profilo corrispondente e il più affine.
+      </p>
+    </div>
+
+  </main>
+
+  <footer>© 2025 — Profili di riferimento • Test orientamento politico</footer>
+</body>
+</html>
