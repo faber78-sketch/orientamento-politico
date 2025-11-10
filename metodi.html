@@ -1,200 +1,113 @@
 <!DOCTYPE html>
 <html lang="it">
-  <script>
-// Protezione semplice: impedisce accesso diretto via URL
-const allowAccess = sessionStorage.getItem("accessGranted");
-if (!allowAccess) {
-  document.body.innerHTML = "<h2 style='text-align:center;margin-top:100px;'>⛔ Accesso non autorizzato</h2>";
-  throw new Error("Accesso non autorizzato");
-}
-</script>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📘 Metodi di riferimento e profili politici</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Metodologia del Test Politico</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f9fafb;
-      color: #222;
-      margin: 0;
-      padding: 0;
-      line-height: 1.6;
-    }
-
-    header {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      color: #fff;
-      padding: 1.5rem 1rem;
-      text-align: center;
-    }
-
-    header h1 {
-      font-size: 1.8rem;
-      margin-bottom: 0.3rem;
-    }
-
-    header p {
-      font-size: 1rem;
-      opacity: 0.9;
-    }
-
-    main {
-      max-width: 900px;
-      margin: 2rem auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      padding: 2rem;
-    }
-
-    h2 {
-      color: #2563eb;
-      border-bottom: 2px solid #2563eb;
-      padding-bottom: 0.3rem;
-      margin-bottom: 1rem;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1.5rem;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 0.8rem;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background-color: #eff6ff;
-      color: #1e3a8a;
-    }
-
-    tr:nth-child(even) {
-      background-color: #f9fafb;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 2rem;
-      font-size: 0.9rem;
-      color: #555;
-    }
-
-    @media (max-width: 700px) {
-      main {
-        padding: 1rem;
-      }
-      table, th, td {
-        font-size: 0.9rem;
-      }
-      header h1 {
-        font-size: 1.4rem;
-      }
-    }
+    :root{ --accent:#003366; --bg:#f6f8fb; --card:#fff; --text:#1c1c1c; --muted:#5b6b7a; }
+    body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    header{background:var(--accent);color:#fff;padding:18px;text-align:center}
+    header h1{margin:0;font-size:1.4rem}
+    main{max-width:1100px;margin:18px auto;padding:18px}
+    .card{background:var(--card);padding:18px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:18px}
+    h2{color:var(--accent);margin-top:0}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border:1px solid #e6eef6;text-align:left;vertical-align:top}
+    th{background:#eaf2fb;color:var(--accent);text-align:center}
+    tr:nth-child(even){background:#fbfdff}
+    .small{font-size:0.9rem;color:var(--muted)}
+    footer{text-align:center;color:var(--muted);margin-top:12px;padding-bottom:20px}
   </style>
 </head>
 <body>
+  <header>
+    <h1>📘 Metodi di riferimento e struttura del test</h1>
+  </header>
 
-<header>
-  <h1>📘 Metodi di riferimento e profili politici</h1>
-  <p>Descrizione sintetica dei principali orientamenti politici analizzati nel test</p>
-</header>
+  <main>
+    <div class="card">
+      <h2>Obiettivi</h2>
+      <p>
+        Il test analizza l’orientamento politico personale lungo nove assi tematici, consentendo una lettura valoriale più che partitica.
+        Non è un sondaggio elettorale: è uno strumento di autovalutazione costruito con criteri di psicometria e mappatura multidimensionale.
+      </p>
+    </div>
 
-<main>
-  <section>
-    <h2>Metodologia</h2>
-    <p>
-      Questo test si basa su un modello multidimensionale che analizza le risposte secondo
-      <strong>sei aree principali</strong> del pensiero politico contemporaneo:
-      economia, welfare e lavoro, ambiente e innovazione, diritti civili, immigrazione e identità,
-      istituzioni e giustizia, etica e società.  
-      Ogni area contribuisce alla costruzione di un profilo politico complessivo,
-      calcolato in modo equilibrato e coerente con l'orientamento espresso dalle risposte.
-    </p>
-  </section>
+    <div class="card">
+      <h2>Struttura</h2>
+      <p>
+        Il questionario contiene 9 aree tematiche e 81 affermazioni. Per ciascuna affermazione l’utente indica il proprio grado di accordo su una scala da 1 (completamente in disaccordo) a 5 (completamente d’accordo).
+        Alcune affermazioni sono formulate in modo bilanciato e alcune sono invertite nel calcolo per evitare bias direzionali.
+      </p>
 
-  <section>
-    <h2>Profili politici di riferimento</h2>
-    <table>
-      <tr>
-        <th>Profilo</th>
-        <th>Descrizione sintetica</th>
-      </tr>
+      <h3>Le 9 aree</h3>
+      <ol>
+        <li>Economia e lavoro</li>
+        <li>Stato, tasse e welfare</li>
+        <li>Europa e politica estera</li>
+        <li>Ambiente e sviluppo sostenibile</li>
+        <li>Immigrazione e identità</li>
+        <li>Giustizia, sicurezza e legalità</li>
+        <li>Etica, tecnologia e cultura</li>
+        <li>Innovazione sociale e futuro</li>
+        <li>Etica, morale e responsabilità pubblica</li>
+      </ol>
+    </div>
 
-      <tr>
-        <td><strong>Socialdemocratico</strong></td>
-        <td>Promuove un’economia di mercato regolata dallo Stato per ridurre le disuguaglianze,
-        con forte attenzione al welfare, alla sanità pubblica, ai diritti civili e alle libertà personali.
-        È favorevole alla tassazione progressiva e all’intervento pubblico per la giustizia sociale.</td>
-      </tr>
+    <div class="card">
+      <h2>Calcolo e normalizzazione</h2>
+      <p>
+        Per ogni area viene calcolata la media delle risposte (con le opportune inversioni quando l’accordo rappresenta la posizione "sinistra").
+        La media grezza su scala 1..5 viene poi normalizzata su 0..100 usando la formula:
+      </p>
+      <pre>norm = ROUND( ( (avgRaw - 1) / 4 ) * 100 )</pre>
+      <p>Il vettore risultante (9 valori 0..100) viene confrontato con vettori archetipici (profili idealtipici) tramite distanza euclidea normalizzata per determinare il profilo più affine.</p>
+    </div>
 
-      <tr>
-        <td><strong>Liberale progressista</strong></td>
-        <td>Valorizza l’iniziativa individuale, il libero mercato e i diritti civili, ma sostiene anche
-        politiche ambientali e inclusione sociale. Crede nella concorrenza come motore di crescita,
-        accompagnata da pari opportunità e meritocrazia.</td>
-      </tr>
+    <div class="card">
+      <h2>Profili idealtipici (sintesi)</h2>
+      <table>
+        <thead>
+          <tr><th>Profilo</th><th>Descrizione sintetica</th><th>Aree più rappresentative</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Progressista</td><td>Stato sociale, uguaglianza, diritti civili, sostenibilità.</td><td>1,2,4</td></tr>
+          <tr><td>Riformista</td><td>Libertà individuale e mercato regolato; pragmatismo.</td><td>1,3,8</td></tr>
+          <tr><td>Conservatore</td><td>Ordine, valori tradizionali, mercato e sicurezza.</td><td>6,5,1</td></tr>
+          <tr><td>Sovranista</td><td>Sovranità, protezione delle produzioni locali e controllo migratorio.</td><td>5,3,1</td></tr>
+          <tr><td>Ecologista</td><td>Priorità all’ambiente e transizione ecologica.</td><td>4,8</td></tr>
+          <tr><td>Libertario</td><td>Minimo Stato, massima libertà economica e personale.</td><td>1,8,7</td></tr>
+          <tr><td>Tecnocratico</td><td>Governo per competenze, pragmatismo e riforme basate su dati.</td><td>8,3,7</td></tr>
+          <tr><td>Comunitario</td><td>Mutualismo locale, priorità al tessuto sociale e alle PMI.</td><td>1,5</td></tr>
+          <tr><td>Populista</td><td>Centralità del popolo, critica alle élite e domanda di maggiore trasparenza.</td><td>9,5</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-      <tr>
-        <td><strong>Conservatore moderato</strong></td>
-        <td>Difende l’ordine sociale, la stabilità economica e le tradizioni culturali,
-        pur accettando un ruolo equilibrato dello Stato in economia. È generalmente prudente su innovazioni sociali
-        e sostiene politiche fiscali favorevoli alle imprese.</td>
-      </tr>
+    <div class="card">
+      <h2>Attendibilità e limiti</h2>
+      <p>
+        - Il test è utile per mappare orientamenti valoriali ma non dichiara preferenze elettorali certe. <br>
+        - La soglia minima di risposte (60%) serve a garantire sufficiente copertura tematica prima del calcolo. <br>
+        - I profili sono archetipici: molti utenti risultano “misti” (profilo principale + affinità secondarie).
+      </p>
+    </div>
 
-      <tr>
-        <td><strong>Liberista</strong></td>
-        <td>Pone al centro la libertà economica, la riduzione delle tasse e la semplificazione burocratica.
-        È favorevole a un intervento minimo dello Stato e alla massima responsabilità individuale,
-        privilegiando l’imprenditoria e la competitività.</td>
-      </tr>
+    <div class="card">
+      <h2>Riferimenti</h2>
+      <ul>
+        <li>World Values Survey</li>
+        <li>European Social Survey</li>
+        <li>Moral Foundations Theory (Haidt)</li>
+        <li>Political Compass — mappature multidimensionali</li>
+      </ul>
+    </div>
 
-      <tr>
-        <td><strong>Populista sovranista</strong></td>
-        <td>Attribuisce priorità alla sovranità nazionale, al controllo dell’immigrazione e alla tutela
-        delle identità culturali. Spesso scettico verso istituzioni sovranazionali e globalizzazione,
-        promuove un forte legame tra Stato e popolo.</td>
-      </tr>
+    <p style="margin-top:12px"><a href="index.html" style="color:var(--accent);text-decoration:underline">⬅ Torna al test</a></p>
 
-      <tr>
-        <td><strong>Ecologista progressista</strong></td>
-        <td>Ritiene la sostenibilità ambientale una priorità assoluta.
-        Sostiene l’energia rinnovabile, la riduzione dei consumi, l’economia circolare e l’inclusione sociale.
-        Promuove una società solidale e globale fondata sul rispetto per l’ambiente e per i diritti umani.</td>
-      </tr>
+  </main>
 
-      <tr>
-        <td><strong>Socialista radicale</strong></td>
-        <td>Critico verso il capitalismo e la disuguaglianza, sostiene la proprietà pubblica dei mezzi di produzione,
-        la redistribuzione della ricchezza e una democrazia partecipativa.
-        È favorevole a un’economia pianificata o fortemente regolata.</td>
-      </tr>
-
-      <tr>
-        <td><strong>Conservatore tradizionalista</strong></td>
-        <td>Difende i valori morali, religiosi e culturali della tradizione. 
-        Scettico verso il multiculturalismo e le trasformazioni sociali rapide,
-        sostiene la famiglia, la disciplina e un forte senso di identità nazionale.</td>
-      </tr>
-
-      <tr>
-        <td><strong>Centrista riformista</strong></td>
-        <td>Propone una sintesi tra efficienza economica e solidarietà sociale.
-        È pragmatico, favorevole alle riforme graduali, al dialogo tra pubblico e privato
-        e alla ricerca di soluzioni condivise e stabili.</td>
-      </tr>
-    </table>
-  </section>
-
-  <footer>
-    <p>© 2025 - Test di Orientamento Politico | Tutti i diritti riservati</p>
-    <p><a href="index.html">⬅ Torna al test</a></p>
-  </footer>
-</main>
-
+  <footer>© 2025 — Metodi del Test</footer>
 </body>
 </html>
